@@ -1,10 +1,11 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Geist, Geist_Mono, Press_Start_2P } from "next/font/google"
 import "./globals.css"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" })
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" })
+const pressStart2P = Press_Start_2P({ weight: "400", subsets: ["latin"], variable: "--font-game" })
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.obeaj.me"
 
@@ -30,7 +31,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geist.variable} ${geistMono.variable} font-sans antialiased`} suppressHydrationWarning>
+      <body
+        className={`${geist.variable} ${geistMono.variable} ${pressStart2P.variable} font-sans antialiased`}
+        suppressHydrationWarning
+      >
         {children}
       </body>
     </html>

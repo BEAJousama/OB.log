@@ -173,9 +173,8 @@ section {
 
 /* Game-style title font */
 .game-title {
-  font-family: var(--font-geist), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-family: var(--font-game), "Press Start 2P", cursive;
+  letter-spacing: 2px;
 }
 
 /* Dashed divider */
