@@ -48,7 +48,7 @@ export default function BlogHeader() {
   }, [uiSoundEnabled, playScrollTick])
 
   const pathname = usePathname()
-  const portfolioUrl = process.env.NEXT_PUBLIC_PORTFOLIO_URL || "https://obeaj.com"
+  const portfolioUrl = process.env.NEXT_PUBLIC_PORTFOLIO_URL || "https://obeaj.me"
   const isArticlePage = Boolean(pathname && pathname !== "/")
   const backHref = isArticlePage ? "/" : portfolioUrl
   const backLabel = isArticlePage ? t.blogBackToBlog : t.blogBackToPortfolio

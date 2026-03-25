@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next"
 import { getAllPostSlugs } from "@/lib/blog/api"
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.obeaj.com"
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.obeaj.me"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const slugs = await getAllPostSlugs()

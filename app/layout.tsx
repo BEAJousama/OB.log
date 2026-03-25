@@ -6,7 +6,7 @@ import "./globals.css"
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" })
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" })
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.obeaj.com"
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.obeaj.me"
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
