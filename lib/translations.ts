@@ -86,7 +86,8 @@ export const translations = {
     blogSanityNotConfigured: "Sanity not configured",
     blogSanityAddEnv: "Add to",
     blogSanityEnvFile: ".env.local",
-    blogSanityRestart: "Use your real project ID from sanity.io/manage, then restart the dev server (npm run dev).",
+    blogSanityRestart:
+      "Use your real project ID from sanity.io/manage (NEXT_PUBLIC_SANITY_PROJECT_ID), then restart the dev server (npm run dev).",
     blogShowingStarter: "Showing starter posts — no articles in Sanity or the request failed.",
     blogNoArticlesFound: "No articles found.",
     blogArticleFound: "article found",
@@ -185,7 +186,8 @@ export const translations = {
     blogSanityNotConfigured: "Sanity non configuré",
     blogSanityAddEnv: "Ajoutez dans",
     blogSanityEnvFile: ".env.local",
-    blogSanityRestart: "Utilisez votre project ID depuis sanity.io/manage, puis redémarrez le serveur (npm run dev).",
+    blogSanityRestart:
+      "Utilisez votre project ID depuis sanity.io/manage (NEXT_PUBLIC_SANITY_PROJECT_ID), puis redémarrez le serveur (npm run dev).",
     blogShowingStarter: "Articles de démo — aucun article dans Sanity ou la requête a échoué.",
     blogNoArticlesFound: "Aucun article trouvé.",
     blogArticleFound: "article trouvé",

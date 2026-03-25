@@ -2,9 +2,9 @@ import { createClient } from "next-sanity"
 import { mockPosts } from "@/lib/blog/mock-posts"
 import type { BlogPost, BlogSource, Tutorial } from "@/lib/blog/types"
 
-const projectId = process.env.SANITY_PROJECT_ID
-const dataset = process.env.SANITY_DATASET
-const apiVersion = process.env.SANITY_API_VERSION || "2026-02-16"
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET
+const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || "2026-02-16"
 const token = process.env.SANITY_API_READ_TOKEN
 
 export const hasSanityConfig = Boolean(
