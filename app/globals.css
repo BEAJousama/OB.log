@@ -1,0 +1,269 @@
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+@import "tw-animate-css";
+
+
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Light mode - warm beige palette */
+  --background: #F5F1E9;
+  /* Warm but higher-contrast foreground for light mode */
+  --foreground: #2f2720;
+  --card: #FDFBF6;
+  --card-foreground: #2f2720;
+  --accent: #B8A37C;
+  --accent-foreground: #2b2418;
+  --border: #E0D6C5;
+  --muted: #E8E0D0;
+  /* Darker muted text for better readability on beige */
+  --muted-foreground: #5a4a38;
+  --radius: 0.625rem;
+  --particle-opacity: 0.4;
+  --particle-color: #B8A37C;
+  /* Code blocks — base bg, border defines the block */
+  --code-bg: #F5F1E9;
+  --code-header-bg: #E8E0D0;
+  --code-fg: #2f2720;
+  --code-accent: #8B6B35;
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  /* Dark mode - Josh W. Comeau inspired palette with beige accent */
+  --background: #0d0f12;
+  --foreground: #c7cacc;
+  --card: #141820;
+  --card-foreground: #c7cacc;
+  /* Slightly deeper beige accent for dark mode */
+  --accent: #B8A37C;
+  --accent-foreground: #120d07;
+  --particle-opacity: 0.2;
+  --particle-color: #B8A37C;
+  --border: #2a2f3a;
+  --muted: #1e2330;
+  --muted-foreground: #8892a4;
+  --beige: #ffe0c5;
+  /* Code blocks — deeper than page bg for clear separation */
+  --code-bg: #090c10;
+  --code-header-bg: #0d1117;
+  --code-fg: #c9d1d9;
+  --code-accent: #B8A37C;
+
+}
+
+@theme inline {
+  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  font-weight: 400;
+  cursor: none;
+  min-height: 100dvh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Hide default cursor */
+* {
+  cursor: none !important;
+}
+
+/* Custom cursor for interactive elements */
+a, button, .retro-button, .sidebar-icon, .social-icon, [role="button"], input[type="submit"] {
+  position: relative;
+}
+
+html {
+  scroll-behavior: smooth;
+  min-height: 100dvh;
+  /* scroll-snap-type: y mandatory; */
+}
+
+section {
+  /* scroll-snap-align: start; */
+  /* scroll-snap-stop: always; */
+  padding: 4rem 0;
+}
+
+@media (min-width: 768px) {
+  section {
+    padding: 0;
+  }
+}
+
+/* Game-style title font */
+.game-title {
+  font-family: "Press Start 2P", cursive;
+  letter-spacing: 2px;
+}
+
+/* Dashed divider */
+.dashed-divider {
+  border-top: 2px dashed var(--foreground);
+}
+
+/* Pixelated border style */
+.pixel-border {
+  border: 3px solid var(--border);
+}
+
+/* Pixelated text */
+.pixel-text {
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  letter-spacing: 0.03em;
+}
+
+/* Retro button - NO @apply, pure CSS */
+.retro-button {
+  padding: 0.5rem 1rem;
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+  border: 2px solid var(--border);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.1s;
+  font-family: "JetBrains Mono", "Courier New", monospace;
+}
+
+.retro-button:hover {
+  transform: translate(1px, 1px);
+  box-shadow: -1px -1px 0px rgba(0, 0, 0, 0.15);
+}
+
+.retro-button:active {
+  transform: translate(4px, 4px);
+}
+
+/* Sidebar icons with smooth elegant transitions, no animations */
+.sidebar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: var(--card);
+  border: 2px solid var(--border);
+  color: var(--foreground);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-icon:hover {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+  box-shadow: -2px -2px 0px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-icon:active {
+  box-shadow: inset -2px -2px 0px rgba(0, 0, 0, 0.1);
+}
+
+/* Social icon in contact section - smooth elegant style */
+.social-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background-color: var(--card);
+  border: 2px solid var(--border);
+  color: var(--foreground);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.social-icon:hover {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+  box-shadow: -3px -3px 0px rgba(0, 0, 0, 0.15);
+}
+
+.social-icon:active {
+  box-shadow: inset -3px -3px 0px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
