@@ -74,8 +74,8 @@ export default function BlogList({ posts, isMock, configMissing }: BlogListProps
                 <code className="rounded bg-muted px-1">{t.blogSanityEnvFile}</code>:
               </p>
               <pre className="overflow-x-auto rounded bg-muted/80 px-2 py-1.5 text-[11px]">
-                {`NEXT_PUBLIC_SANITY_PROJECT_ID=your_actual_project_id
-NEXT_PUBLIC_SANITY_DATASET=production`}
+                {`SANITY_PROJECT_ID=your_actual_project_id
+SANITY_DATASET=production`}
               </pre>
               <p className="mt-2">
                 <a
