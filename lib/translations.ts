@@ -33,7 +33,7 @@ export const translations = {
     exp1: "▸ Developed, deployed, and maintained web applications using Next.js, Sanity CMS, and modern front-end technologies to deliver fast, scalable, and SEO-optimized websites",
     exp2: "▸ Managed maintenance and feature updates for high-profile clients such as Saatchi & Saatchi and The Brooklyn Tower, achieving 99.9% uptime and reducing post-deployment issues by 25%",
     exp3: "▸ Collaborated with designers and project managers to implement responsive UI components, streamline content workflows, and improve overall system reliability",
-    exp4: "▸ Freelance for Saatchi & Saatchi (Apr–Aug 2024): maintained their website; they are a FutureCorp client",
+    exp4: "▸ Freelance for Saatchi & Saatchi (Apr–Aug 2025): maintained their website; they are a FutureCorp client",
     edu1337: "UM6P - 1337 Coding School (42 Network)",
     edu1337Date: "Nov 2021 - Present",
     edu1337Degree: "Software Engineering, Level 19.53",

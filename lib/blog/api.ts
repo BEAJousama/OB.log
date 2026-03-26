@@ -16,7 +16,7 @@ const client = hasSanityConfig
       projectId,
       dataset,
       apiVersion,
-      useCdn: true,
+      useCdn: !token,
       token,
       perspective: "published",
     })
