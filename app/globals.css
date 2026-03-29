@@ -5,7 +5,8 @@
 
 :root {
   --logo-fly-duration: 920ms;
-  --site-header-offset: 7rem;
+  /* Includes fixed header top inset (gap from viewport) + bar height */
+  --site-header-offset: 7.5rem;
 
   --background: #f5f1e9;
   --foreground: #2f2720;
@@ -267,7 +268,7 @@
 /* ── Layout ── */
 @media (min-width: 768px) {
   :root {
-    --site-header-offset: 7.75rem;
+    --site-header-offset: 8.25rem;
   }
 }
 
