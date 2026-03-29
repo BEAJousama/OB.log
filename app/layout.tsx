@@ -1,11 +1,15 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono, Press_Start_2P } from "next/font/google"
+import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" })
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" })
-const pressStart2P = Press_Start_2P({ weight: "400", subsets: ["latin"], variable: "--font-game" })
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-jetbrains-mono",
+})
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.obeaj.me"
 
@@ -58,6 +62,25 @@ export const metadata: Metadata = {
   },
 }
 
+const themeScript = `
+(function () {
+  try {
+    var t = localStorage.getItem("theme");
+    if (t === "light") {
+      document.documentElement.classList.remove("dark");
+      return;
+    }
+    if (t === "dark") {
+      document.documentElement.classList.add("dark");
+      return;
+    }
+  } catch (e) {}
+  if (window.matchMedia("(prefers-color-scheme: dark)").matches)
+    document.documentElement.classList.add("dark");
+  else
+    document.documentElement.classList.remove("dark");
+})();`
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -66,9 +89,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geist.variable} ${geistMono.variable} ${pressStart2P.variable} font-sans antialiased`}
+        className={`${geist.variable} ${geistMono.variable} ${jetbrainsMono.variable} antialiased`}
         suppressHydrationWarning
       >
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         {children}
       </body>
     </html>

@@ -46,26 +46,28 @@ export default function BlogList({ posts, isMock, configMissing }: BlogListProps
 
   return (
     <>
-      {/* Search bar */}
-      <div className="pixel-border bg-card mb-8 flex items-center gap-3 px-4 py-3">
-        <Search size={16} className="shrink-0 text-muted-foreground" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => handleQuery(e.target.value)}
-          placeholder={t.blogSearchPlaceholder}
-          className="pixel-text w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-        />
-        {query && (
-          <button onClick={() => handleQuery("")} className="shrink-0 text-muted-foreground hover:text-accent">
-            <X size={16} />
-          </button>
-        )}
+      {/* Search bar (hero — intro syncs with logo fly when first visit) */}
+      <div className="hero-intro-card glass-inset mb-8 flex items-center gap-3 px-4 py-3">
+        <div className="hero-intro-body flex min-w-0 flex-1 items-center gap-3">
+          <Search size={16} className="shrink-0 text-muted-foreground" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => handleQuery(e.target.value)}
+            placeholder={t.blogSearchPlaceholder}
+            className="blog-search-input pixel-text min-w-0 flex-1 border-0 bg-transparent text-sm text-foreground shadow-none placeholder:text-muted-foreground focus:border-0 focus:outline-none focus:ring-0 focus-visible:border-0 focus-visible:outline-none focus-visible:ring-0"
+          />
+          {query && (
+            <button onClick={() => handleQuery("")} className="shrink-0 text-muted-foreground hover:text-accent">
+              <X size={16} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Mock / config notice */}
       {isMock && (
-        <div className="pixel-text mb-6 border-2 border-dashed border-border bg-card px-4 py-3 text-xs text-muted-foreground">
+        <div className="glass-panel pixel-text mb-6 border-2 border-dashed border-border px-4 py-3 text-xs text-muted-foreground">
           {configMissing ? (
             <>
               <p className="font-semibold text-foreground mb-1">{t.blogSanityNotConfigured}</p>
@@ -114,7 +116,7 @@ NEXT_PUBLIC_SANITY_DATASET=production`}
           ))}
         </section>
       ) : (
-        <section className="pixel-border bg-card p-8 text-center">
+        <section className="glass-panel p-8 text-center">
           <p className="pixel-text text-sm text-muted-foreground">{t.blogNoMatch}</p>
           <button
             onClick={() => handleQuery("")}
@@ -131,7 +133,7 @@ NEXT_PUBLIC_SANITY_DATASET=production`}
           <button
             onClick={() => handlePage(safePage - 1)}
             disabled={safePage === 1}
-            className="sidebar-icon h-10 w-10 disabled:opacity-30"
+            className="glass-chip flex h-10 w-10 shrink-0 items-center justify-center rounded-full disabled:opacity-30"
             title={t.blogPrevPage}
           >
             <ChevronLeft size={18} />
@@ -142,10 +144,10 @@ NEXT_PUBLIC_SANITY_DATASET=production`}
               <button
                 key={p}
                 onClick={() => handlePage(p)}
-                className={`pixel-border pixel-text h-9 w-9 text-xs font-semibold transition-colors ${
+                className={`glass-chip pixel-text h-9 w-9 text-xs font-semibold transition-colors ${
                   p === safePage
-                    ? "bg-accent text-accent-foreground"
-                    : "bg-card text-foreground hover:bg-muted"
+                    ? "bg-accent/30 text-accent ring-1 ring-accent/45"
+                    : "text-foreground hover:bg-muted/40"
                 }`}
               >
                 {p}
@@ -156,7 +158,7 @@ NEXT_PUBLIC_SANITY_DATASET=production`}
           <button
             onClick={() => handlePage(safePage + 1)}
             disabled={safePage === totalPages}
-            className="sidebar-icon h-10 w-10 disabled:opacity-30"
+            className="glass-chip flex h-10 w-10 shrink-0 items-center justify-center rounded-full disabled:opacity-30"
             title={t.blogNextPage}
           >
             <ChevronRight size={18} />

@@ -1,32 +1,31 @@
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
-
-
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Light mode - warm beige palette */
-  --background: #F5F1E9;
-  /* Warm but higher-contrast foreground for light mode */
+  --logo-fly-duration: 920ms;
+  --site-header-offset: 7rem;
+
+  --background: #f5f1e9;
   --foreground: #2f2720;
-  --card: #FDFBF6;
+  --card: #fdfbf6;
   --card-foreground: #2f2720;
-  --accent: #B8A37C;
+  --accent: #b8a37c;
   --accent-foreground: #2b2418;
-  --border: #E0D6C5;
-  --muted: #E8E0D0;
-  /* Darker muted text for better readability on beige */
+  --on-accent: #1c1610;
+  --border: #e0d6c5;
+  --muted: #e8e0d0;
   --muted-foreground: #5a4a38;
-  --radius: 0.625rem;
-  --particle-opacity: 0.4;
-  --particle-color: #B8A37C;
-  /* Code blocks — base bg, border defines the block */
-  --code-bg: #F5F1E9;
-  --code-header-bg: #E8E0D0;
+  --particle-color: #b8a37c;
+  --particle-opacity: 0.52;
+
+  --code-bg: #f5f1e9;
+  --code-header-bg: #e8e0d0;
   --code-fg: #2f2720;
-  --code-accent: #8B6B35;
+  --code-accent: #8b6b35;
+
+  --radius: 0.625rem;
 
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
@@ -54,30 +53,26 @@
 }
 
 .dark {
-  /* Dark mode - Josh W. Comeau inspired palette with beige accent */
   --background: #0d0f12;
   --foreground: #c7cacc;
   --card: #141820;
   --card-foreground: #c7cacc;
-  /* Slightly deeper beige accent for dark mode */
-  --accent: #B8A37C;
-  --accent-foreground: #120d07;
-  --particle-opacity: 0.2;
-  --particle-color: #B8A37C;
+  --accent: #b8a37c;
+  --accent-foreground: #12100c;
+  --on-accent: #12100c;
   --border: #2a2f3a;
   --muted: #1e2330;
   --muted-foreground: #8892a4;
-  --beige: #ffe0c5;
-  /* Code blocks — deeper than page bg for clear separation */
+  --particle-color: #b8a37c;
+  --particle-opacity: 0.38;
+
   --code-bg: #090c10;
   --code-header-bg: #0d1117;
   --code-fg: #c9d1d9;
-  --code-accent: #B8A37C;
-
+  --code-accent: #b8a37c;
 }
 
 @theme inline {
-  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -92,6 +87,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-on-accent: var(--on-accent);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -121,148 +117,490 @@
     @apply border-border outline-ring/50;
   }
 
-  body {
-    @apply bg-background text-foreground;
+  html {
+    scroll-behavior: smooth;
+    min-height: 100dvh;
   }
-}
 
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
 
-
-* {
-  border-color: var(--border);
-}
-
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: "JetBrains Mono", "Courier New", monospace;
-  font-weight: 400;
-  cursor: none;
-  min-height: 100dvh;
-  margin: 0;
-  padding: 0;
-}
-
-/* Hide default cursor */
-* {
-  cursor: none !important;
-}
-
-/* Custom cursor for interactive elements */
-a, button, .retro-button, .sidebar-icon, .social-icon, [role="button"], input[type="submit"] {
-  position: relative;
-}
-
-html {
-  scroll-behavior: smooth;
-  min-height: 100dvh;
-  /* scroll-snap-type: y mandatory; */
-}
-
-section {
-  /* scroll-snap-align: start; */
-  /* scroll-snap-stop: always; */
-  padding: 4rem 0;
-}
-
-@media (min-width: 768px) {
   section {
     padding: 0;
   }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-jetbrains-mono), "Courier New", monospace;
+    font-weight: 400;
+    min-height: 100dvh;
+    margin: 0;
+  }
+
+  /* Custom cursor only when fine pointer + motion OK (see components/custom-cursor.tsx) */
+  @media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    body {
+      cursor: none;
+    }
+
+    body * {
+      cursor: none !important;
+    }
+  }
+
+  a,
+  button,
+  .retro-button,
+  .sidebar-icon,
+  .social-icon,
+  [role="button"],
+  input[type="submit"] {
+    position: relative;
+  }
 }
 
-/* Game-style title font */
-.game-title {
-  font-family: var(--font-game), "Press Start 2P", cursive;
-  letter-spacing: 2px;
+/* ── Custom cursor (glass + accent, matches glass-panel / glass-chip) ── */
+.custom-cursor {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 52%, var(--border) 48%);
+  background: color-mix(in srgb, var(--card) 32%, transparent);
+  backdrop-filter: blur(12px) saturate(1.28);
+  -webkit-backdrop-filter: blur(12px) saturate(1.28);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--foreground) 7%, transparent),
+    0 4px 18px color-mix(in srgb, var(--foreground) 9%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #fff 22%, transparent);
+  transition:
+    width 0.22s cubic-bezier(0.33, 1, 0.68, 1),
+    height 0.22s cubic-bezier(0.33, 1, 0.68, 1),
+    border-radius 0.24s cubic-bezier(0.33, 1, 0.68, 1),
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.22s ease;
 }
 
-/* Dashed divider */
+.dark .custom-cursor {
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--border) 52%);
+  background: color-mix(in srgb, var(--card) 28%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #fff 7%, transparent),
+    0 6px 22px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 color-mix(in srgb, #fff 8%, transparent);
+}
+
+/* Expanded: ring only — no fill/blur so button/link text stays fully visible */
+.custom-cursor--hover {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--border) 42%);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 42%, transparent);
+}
+
+.dark .custom-cursor--hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border) 45%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 48%, transparent);
+}
+
+.custom-cursor__dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 9999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--foreground) 18%, transparent);
+  transition:
+    opacity 0.18s ease,
+    transform 0.2s cubic-bezier(0.33, 1, 0.68, 1);
+  pointer-events: none;
+}
+
+.custom-cursor--hover .custom-cursor__dot {
+  opacity: 0;
+  transform: scale(0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-cursor,
+  .custom-cursor__dot {
+    transition: none;
+  }
+}
+
+/* ── Typography roles ── */
+.section-title {
+  font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.pixel-text {
+  font-family: var(--font-jetbrains-mono), "Courier New", monospace;
+  letter-spacing: 0.03em;
+}
+
+.body-copy {
+  font-family: var(--font-jetbrains-mono), "Courier New", monospace;
+  font-size: 0.875rem;
+  line-height: 1.68;
+  color: color-mix(in srgb, var(--foreground) 94%, transparent);
+}
+
+@media (min-width: 768px) {
+  .body-copy {
+    font-size: 0.9375rem;
+  }
+}
+
+/* ── Layout ── */
+@media (min-width: 768px) {
+  :root {
+    --site-header-offset: 7.75rem;
+  }
+}
+
+.section-surface {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 3.5rem;
+  padding-bottom: 3.5rem;
+  background: transparent;
+}
+
+@media (min-width: 768px) {
+  .section-surface {
+    padding-top: 4.5rem;
+    padding-bottom: 4.5rem;
+  }
+}
+
+.section-surface.hero-section {
+  min-height: calc(100dvh - var(--site-header-offset));
+  min-height: calc(100svh - var(--site-header-offset));
+  justify-content: flex-start;
+  padding-top: 2rem;
+  padding-bottom: 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .section-surface.hero-section {
+    padding-top: 2.5rem;
+    padding-bottom: 3rem;
+  }
+}
+
+/* ── Glass surfaces ── */
+.glass-panel {
+  isolation: isolate;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--border) 78%, var(--foreground) 12%);
+  background: color-mix(in srgb, var(--card) 58%, transparent);
+  backdrop-filter: blur(32px) saturate(1.38);
+  -webkit-backdrop-filter: blur(32px) saturate(1.38);
+  box-shadow:
+    0 18px 48px -12px color-mix(in srgb, var(--foreground) 12%, transparent),
+    0 2px 0 color-mix(in srgb, #fff 22%, transparent) inset,
+    0 -1px 0 color-mix(in srgb, var(--foreground) 6%, transparent) inset;
+}
+
+.dark .glass-panel {
+  border-color: color-mix(in srgb, var(--border) 85%, var(--foreground) 8%);
+  backdrop-filter: blur(36px) saturate(1.32);
+  -webkit-backdrop-filter: blur(36px) saturate(1.32);
+  box-shadow:
+    0 22px 56px -14px rgba(0, 0, 0, 0.55),
+    0 1px 0 color-mix(in srgb, #fff 8%, transparent) inset,
+    0 -1px 0 color-mix(in srgb, #000 35%, transparent) inset;
+}
+
+.glass-chip {
+  isolation: isolate;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, var(--foreground) 10%);
+  background: color-mix(in srgb, var(--card) 52%, transparent);
+  backdrop-filter: blur(24px) saturate(1.35);
+  -webkit-backdrop-filter: blur(24px) saturate(1.35);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 18%, transparent) inset;
+}
+
+.dark .glass-chip {
+  backdrop-filter: blur(28px) saturate(1.28);
+  -webkit-backdrop-filter: blur(28px) saturate(1.28);
+  border-color: color-mix(in srgb, var(--border) 88%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 6%, transparent) inset;
+}
+
+.glass-inset,
+.skill-item {
+  isolation: isolate;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border) 78%);
+  background: color-mix(in srgb, var(--card) 45%, transparent);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--foreground) 4%, transparent) inset,
+    0 1px 12px color-mix(in srgb, var(--accent) 12%, transparent) inset;
+}
+
+.dark .glass-inset,
+.dark .skill-item {
+  border-color: color-mix(in srgb, var(--card) 35%, var(--border) 65%);
+  background: color-mix(in srgb, var(--card) 38%, var(--background) 62%);
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #fff 4%, transparent) inset,
+    0 -1px 0 color-mix(in srgb, #000 25%, transparent) inset;
+}
+
+/* ── Buttons ── */
+.btn-accent-solid {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  padding: 0.5rem 1rem;
+  font-family: var(--font-jetbrains-mono), "Courier New", monospace;
+  font-weight: 600;
+  color: var(--on-accent);
+  background: color-mix(in srgb, var(--accent) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border) 45%);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--foreground) 8%, transparent),
+    0 1px 0 color-mix(in srgb, #fff 25%, transparent) inset;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.btn-accent-solid:hover {
+  background: color-mix(in srgb, var(--accent) 88%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--foreground) 12%, transparent),
+    0 1px 0 color-mix(in srgb, #fff 35%, transparent) inset;
+}
+
+.dark .btn-accent-solid {
+  background: color-mix(in srgb, var(--accent) 58%, transparent);
+}
+
+.dark .btn-accent-solid:hover {
+  background: color-mix(in srgb, var(--accent) 72%, transparent);
+}
+
+.btn-muted-solid {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  padding: 0.5rem 1rem;
+  font-family: var(--font-jetbrains-mono), "Courier New", monospace;
+  font-weight: 600;
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--muted) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, var(--foreground) 8%);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 12%, transparent) inset;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.btn-muted-solid:hover {
+  background: color-mix(in srgb, var(--muted) 95%, transparent);
+  border-color: color-mix(in srgb, var(--border) 55%, var(--accent) 20%);
+}
+
+.retro-button {
+  padding: 0.5rem 1rem;
+  font-family: var(--font-jetbrains-mono), "Courier New", monospace;
+  font-weight: 600;
+  color: var(--on-accent);
+  background: color-mix(in srgb, var(--accent) 68%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--border) 50%);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--foreground) 7%, transparent),
+    0 1px 0 color-mix(in srgb, #fff 22%, transparent) inset;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.retro-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--accent) 82%, transparent);
+}
+
+.retro-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.retro-button:disabled {
+  opacity: 0.5;
+}
+
+.dark .retro-button {
+  background: color-mix(in srgb, var(--accent) 52%, transparent);
+}
+
+.dark .retro-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 68%, transparent);
+}
+
+/* ── Dividers & frames ── */
 .dashed-divider {
-  border-top: 2px dashed var(--foreground);
+  border-top: 2px dashed color-mix(in srgb, var(--foreground) 25%, transparent);
 }
 
-/* Pixelated border style */
 .pixel-border {
   border: 3px solid var(--border);
 }
 
-/* Pixelated text */
-.pixel-text {
-  font-family: "JetBrains Mono", "Courier New", monospace;
-  letter-spacing: 0.03em;
+/* ── Brand loading arc ── */
+@keyframes loading-logo-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-/* Retro button - NO @apply, pure CSS */
-.retro-button {
-  padding: 0.5rem 1rem;
-  background-color: var(--accent);
-  color: var(--accent-foreground);
-  border: 2px solid var(--border);
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.1s;
-  font-family: "JetBrains Mono", "Courier New", monospace;
+.loading-logo-arc {
+  transform-origin: 180px 180px;
+  animation: loading-logo-spin 1.15s linear infinite;
 }
 
-.retro-button:hover {
-  transform: translate(1px, 1px);
-  box-shadow: -1px -1px 0px rgba(0, 0, 0, 0.15);
+@media (prefers-reduced-motion: reduce) {
+  .loading-logo-arc {
+    animation: none;
+  }
 }
 
-.retro-button:active {
-  transform: translate(4px, 4px);
+/* Scroll-driven nav arc (CSS scroll timeline) */
+@keyframes logo-nav-arc-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-/* Sidebar icons with smooth elegant transitions, no animations */
-.sidebar-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  background-color: var(--card);
-  border: 2px solid var(--border);
-  color: var(--foreground);
-  cursor: pointer;
-  transition: all 0.2s ease;
+@supports (animation-timeline: scroll()) {
+  .logo-nav-arc-scroll {
+    animation: logo-nav-arc-rotate linear forwards;
+    animation-timeline: scroll(root);
+    animation-range: 0% 100%;
+  }
 }
 
-.sidebar-icon:hover {
-  background-color: var(--accent);
-  color: var(--accent-foreground);
-  box-shadow: -2px -2px 0px rgba(0, 0, 0, 0.1);
+@supports (animation-timeline: scroll(root block)) {
+  .logo-nav-arc-scroll {
+    animation-timeline: scroll(root block);
+  }
 }
 
-.sidebar-icon:active {
-  box-shadow: inset -2px -2px 0px rgba(0, 0, 0, 0.1);
+@media (prefers-reduced-motion: reduce) {
+  .logo-nav-arc-scroll {
+    animation: none !important;
+  }
 }
 
-/* Social icon in contact section - smooth elegant style */
-.social-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  background-color: var(--card);
-  border: 2px solid var(--border);
-  color: var(--foreground);
-  cursor: pointer;
-  transition: all 0.2s ease;
+/* ── Hero intro (synced to logo fly duration) ── */
+.hero-intro-card {
+  opacity: 0;
+  transform: translateY(14px);
 }
 
-.social-icon:hover {
-  background-color: var(--accent);
-  color: var(--accent-foreground);
-  box-shadow: -3px -3px 0px rgba(0, 0, 0, 0.15);
+.hero-intro-body {
+  opacity: 0;
+  transform: translateY(10px);
 }
 
-.social-icon:active {
-  box-shadow: inset -3px -3px 0px rgba(0, 0, 0, 0.1);
+@keyframes hero-intro-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
+/* Synced to logo fly: starts when fly phase begins (`data-intro-fly`), not when intro fully completes */
+html[data-intro-fly="true"] .hero-intro-card {
+  animation: hero-intro-rise calc(0.88 * var(--logo-fly-duration)) cubic-bezier(0.33, 1, 0.68, 1) forwards;
+  animation-delay: calc(0.34 * var(--logo-fly-duration));
+}
+
+html[data-intro-fly="true"] .hero-intro-body {
+  animation: hero-intro-rise calc(0.88 * var(--logo-fly-duration)) cubic-bezier(0.33, 1, 0.68, 1) forwards;
+  animation-delay: calc(0.34 * var(--logo-fly-duration) + 140ms);
+}
+
+/* Skip intro / no fly phase: show hero immediately when ready */
+html[data-intro-ready="true"]:not([data-intro-fly="true"]) .hero-intro-card,
+html[data-intro-ready="true"]:not([data-intro-fly="true"]) .hero-intro-body {
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-intro-card,
+  .hero-intro-body {
+    opacity: 1;
+    transform: none;
+    animation: none !important;
+  }
+}
+
+/* Particles float */
+@keyframes particle-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-18px);
+  }
+}
+
+/* Nav overflow */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Blog search — no focus ring/box (avoids rectangular outline on glass-inset) */
+.blog-search-input:focus,
+.blog-search-input:focus-visible {
+  outline: none;
+  box-shadow: none;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-ring-offset-shadow: 0 0 #0000;
 }

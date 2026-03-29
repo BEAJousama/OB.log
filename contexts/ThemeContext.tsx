@@ -16,15 +16,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") as Theme
-    if (savedTheme && (savedTheme === "light" || savedTheme === "dark")) {
+    if (savedTheme === "light" || savedTheme === "dark") {
       setTheme(savedTheme)
       document.documentElement.classList.toggle("dark", savedTheme === "dark")
-    } else {
-      // Default to dark mode
-      setTheme("dark")
-      localStorage.setItem("theme", "dark")
-      document.documentElement.classList.add("dark")
+      return
     }
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+    const initial: Theme = prefersDark ? "dark" : "light"
+    setTheme(initial)
+    document.documentElement.classList.toggle("dark", prefersDark)
   }, [])
 
   const toggleTheme = () => {

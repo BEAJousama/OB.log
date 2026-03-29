@@ -3,113 +3,449 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Moon, Sun, Volume2, VolumeX } from "lucide-react"
-import { useTheme } from "@/contexts/ThemeContext"
+import { Sun, Moon, Volume2, VolumeX, Menu, X, ChevronDown } from "lucide-react"
 import { useLanguage } from "@/contexts/LanguageContext"
+import { useTheme } from "@/contexts/ThemeContext"
 import { useSound } from "@/hooks/use-sound"
 import { useSoundSettings } from "@/contexts/SoundContext"
+import { useIntro } from "@/contexts/IntroContext"
+import type { Language } from "@/lib/translations"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils"
+import ObeajMark from "@/components/brand/obeaj-mark"
+
+const PORTFOLIO_URL = (process.env.NEXT_PUBLIC_PORTFOLIO_URL || "https://obeaj.me").replace(/\/$/, "")
+
+function IconToolbarButton({
+  onClick,
+  label,
+  children,
+}: {
+  onClick: () => void
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex size-10 shrink-0 items-center justify-center rounded-full text-muted-foreground ring-1 ring-border/50 transition hover:bg-muted hover:text-foreground hover:ring-border sm:size-11"
+      title={label}
+      aria-label={label}
+    >
+      {children}
+    </button>
+  )
+}
 
 export default function BlogHeader() {
-  const { theme, toggleTheme } = useTheme()
-  const { language, setLanguage, t } = useLanguage()
-  const { uiSoundEnabled, toggleUiSound } = useSoundSettings()
-  const { playClick, playScrollTick } = useSound()
-  const rotatingGroupRef = useRef<SVGGElement>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const logoArcRotateRef = useRef<SVGGElement | null>(null)
+  const docScrollRangeRef = useRef(1)
   const lastScrollBucketRef = useRef<number | null>(null)
-  const rafRef = useRef<number>(0)
+  const headerBarRef = useRef<HTMLDivElement>(null)
+  const [logoArcUsesScrollTimeline, setLogoArcUsesScrollTimeline] = useState(false)
+  const [menuTopPx, setMenuTopPx] = useState(108)
+  const [isMobile, setIsMobile] = useState(false)
+  const { language, setLanguage, t } = useLanguage()
+  const { theme, toggleTheme } = useTheme()
+  const { playClick, playScrollTick } = useSound()
+  const { uiSoundEnabled, toggleUiSound } = useSoundSettings()
+  const { introReady } = useIntro()
+  const pathname = usePathname()
 
   useEffect(() => {
-    const handleScroll = () => {
-      cancelAnimationFrame(rafRef.current)
-      rafRef.current = requestAnimationFrame(() => {
-        const scrollTop = window.scrollY
-
-        // Direct DOM update — no React state, no re-render
-        if (rotatingGroupRef.current) {
-          rotatingGroupRef.current.style.transform = `rotate(${scrollTop * 0.3}deg)`
-        }
-
-        const docHeight = document.documentElement.scrollHeight - window.innerHeight
-        const progress = docHeight > 0 ? Math.min(scrollTop / docHeight, 1) : 0
-        const bucket = Math.floor(progress * 10)
-        if (bucket > 0 && bucket !== lastScrollBucketRef.current) {
-          lastScrollBucketRef.current = bucket
-          if (uiSoundEnabled) playScrollTick()
-        }
-      })
+    const el = headerBarRef.current
+    if (!el) return
+    const measure = () => {
+      const r = el.getBoundingClientRect()
+      setMenuTopPx(Math.round(r.bottom + 8))
     }
-
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    handleScroll()
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    window.addEventListener("resize", measure)
     return () => {
-      window.removeEventListener("scroll", handleScroll)
-      cancelAnimationFrame(rafRef.current)
+      ro.disconnect()
+      window.removeEventListener("resize", measure)
     }
-  }, [uiSoundEnabled, playScrollTick])
+  }, [])
 
-  const pathname = usePathname()
-  const portfolioUrl = process.env.NEXT_PUBLIC_PORTFOLIO_URL || "https://obeaj.me"
-  const isArticlePage = Boolean(pathname && pathname !== "/")
-  const backHref = isArticlePage ? "/" : portfolioUrl
-  const backLabel = isArticlePage ? t.blogBackToBlog : t.blogBackToPortfolio
-  const label = t.blogTitle
+  useEffect(() => {
+    const updateRange = () => {
+      docScrollRangeRef.current = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
+    }
+    updateRange()
+    const ro = new ResizeObserver(updateRange)
+    ro.observe(document.documentElement)
+    window.addEventListener("resize", updateRange, { passive: true })
+    window.visualViewport?.addEventListener("resize", updateRange)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener("resize", updateRange)
+      window.visualViewport?.removeEventListener("resize", updateRange)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof CSS === "undefined" || typeof window === "undefined") return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setLogoArcUsesScrollTimeline(false)
+      return
+    }
+    const ok =
+      CSS.supports("animation-timeline: scroll(root)") ||
+      CSS.supports("animation-timeline: scroll(root block)")
+    setLogoArcUsesScrollTimeline(ok)
+  }, [])
+
+  useEffect(() => {
+    if (!logoArcUsesScrollTimeline) return
+    logoArcRotateRef.current?.style.removeProperty("transform")
+  }, [logoArcUsesScrollTimeline])
+
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 767px)")
+    const handler = () => setIsMobile(mql.matches)
+    handler()
+    mql.addEventListener("change", handler)
+    return () => mql.removeEventListener("change", handler)
+  }, [])
+
+  useEffect(() => {
+    if (!isMobile) {
+      setMobileMenuOpen(false)
+    }
+  }, [isMobile])
+
+  useEffect(() => {
+    if (isMobile && mobileMenuOpen) {
+      const prev = document.body.style.overflow
+      document.body.style.overflow = "hidden"
+      return () => {
+        document.body.style.overflow = prev
+      }
+    }
+  }, [isMobile, mobileMenuOpen])
+
+  useEffect(() => {
+    let rafId = 0
+    let scrollPending = false
+
+    const applyScroll = () => {
+      scrollPending = false
+      const scrollTop = window.scrollY
+      const progress = Math.min(scrollTop / docScrollRangeRef.current, 1)
+
+      if (!logoArcUsesScrollTimeline) {
+        const g = logoArcRotateRef.current
+        if (g) {
+          g.style.transform = `rotate(${progress * 360}deg)`
+        }
+      }
+
+      const bucket = Math.floor(progress * 10)
+      if (bucket > 0 && bucket !== lastScrollBucketRef.current) {
+        lastScrollBucketRef.current = bucket
+        if (uiSoundEnabled) {
+          playScrollTick()
+        }
+      }
+    }
+
+    const onScroll = () => {
+      if (scrollPending) return
+      scrollPending = true
+      rafId = requestAnimationFrame(applyScroll)
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true })
+    applyScroll()
+
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      cancelAnimationFrame(rafId)
+    }
+  }, [logoArcUsesScrollTimeline, uiSoundEnabled, playScrollTick])
+
+  const navPillBase =
+    "relative shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-xs sm:text-sm font-medium tracking-wide transition-all duration-200"
+
+  const themeLabel = theme === "light" ? "Switch to dark theme" : "Switch to light theme"
+  const soundLabel = uiSoundEnabled ? "Mute UI sounds" : "Enable UI sounds"
+
+  const onThemeClick = () => {
+    if (uiSoundEnabled) playClick()
+    toggleTheme()
+  }
+
+  const onSoundClick = () => {
+    playClick()
+    toggleUiSound()
+  }
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b-4 border-foreground bg-background/95 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-3 md:px-8">
-        <div className="flex items-center gap-3">
-          {/* Animated logo as back button */}
-          <Link
-            href={backHref}
-            className="flex h-16 w-16 items-center justify-center"
-            title={backLabel}
-            onClick={() => { if (uiSoundEnabled) playClick() }}
-          >
-            <svg className="h-16 w-16" viewBox="0 0 532 360" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M180 32C261.738 32 328 98.2619 328 180C328 261.738 261.738 328 180 328C98.2619 328 32 261.738 32 180C32 98.2619 98.2619 32 180 32Z" stroke="var(--accent)" strokeWidth="64" />
-              <g ref={rotatingGroupRef} style={{ transformOrigin: "180px 180px" }}>
-                <circle cx="180" cy="180" r="148" stroke="white" strokeWidth="64" fill="none" strokeDasharray="233 930" />
-              </g>
-              <path d="M265.948 10.6237C261.88 8.97487 267.158 8.8648 342.921 9.08465C342.951 9.08462 421.615 9.00034 425.571 9.5407C429.525 10.0812 430.751 10.0808 434.468 11.1618C467.346 20.7251 490.929 45.6891 502.475 81.194C507.203 95.8137 507.752 115.49 504.014 132.198C501.265 144.509 493.788 160.008 485.761 169.681C483.671 172.21 482.021 174.628 482.021 174.958C482.022 175.398 484.991 178.695 488.619 182.432C504.893 198.921 515.23 221.894 516.77 244.978C519.848 290.046 491.809 334.235 450.573 349.295C432.1 356 432.759 356 342.921 356C292.998 356 261 355.56 261 355.01C261.001 354.461 262.1 353.582 263.529 353.142C269.028 351.493 287.501 341.71 296.737 335.554C308.173 328.08 327.527 309.283 334.784 298.841L339.732 291.695L382.067 291.146L424.292 290.596L431.77 286.968C439.797 283.011 443.975 278.504 448.264 269.161C450.133 265.204 450.573 261.906 450.573 253.222C450.683 243 450.352 241.681 447.054 234.866C442.325 225.193 433.969 217.498 424.622 214.31C418.574 212.222 415.275 212.002 395.482 212.002H373.16L373.93 202.878C375.359 188.148 374.7 159.459 372.94 152.973L371.291 147.258L392.844 146.927C417.475 146.598 420.444 145.718 429.681 136.705C448.154 118.787 443.865 88.9978 420.993 77.0163L415.495 74.0485L377.889 73.4987L340.282 72.9499L334.784 65.0348C327.747 55.0319 308.723 36.1251 297.617 28.2106C289.26 22.165 274.855 14.1413 265.948 10.6237Z" fill="var(--accent)" />
-            </svg>
-          </Link>
-
-          <div>
-            <p className="game-title text-sm md:text-base">{label}</p>
+    <>
+      <header className="pointer-events-none fixed left-0 right-0 top-0 z-50 px-3 pt-4 sm:px-5 sm:pt-5 md:px-6 md:pt-6">
+        <div
+          ref={headerBarRef}
+          className="pointer-events-auto glass-panel mx-auto flex max-w-6xl items-center gap-2 rounded-3xl px-2.5 py-2.5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.14)] dark:shadow-[0_16px_48px_-16px_rgba(0,0,0,0.55)] sm:gap-3 sm:px-4 sm:py-3 md:gap-4 md:px-5 md:py-3.5"
+        >
+          <div className="flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3 md:gap-3.5">
+            <div className="relative shrink-0">
+              <div
+                className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-accent/30 via-transparent to-accent/15 opacity-90 blur-[2px]"
+                aria-hidden
+              />
+              <Link
+                href="/"
+                data-header-logo-button
+                onClick={() => {
+                  if (uiSoundEnabled) playClick()
+                }}
+                className="glass-chip relative flex size-14 items-center justify-center rounded-2xl ring-1 ring-border/50 transition hover:border-accent/35 hover:ring-accent/45 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:size-16"
+                aria-label={t.blogTitle}
+              >
+                <ObeajMark
+                  data-header-logo-mark=""
+                  rotateGroupRef={logoArcRotateRef}
+                  arcScrollTimeline={logoArcUsesScrollTimeline}
+                  className={cn(
+                    "size-11 transition-opacity duration-200 sm:size-[3.25rem]",
+                    introReady ? "opacity-100" : "opacity-0",
+                  )}
+                />
+              </Link>
+            </div>
             <Link
-              href={backHref}
-              className="pixel-text text-xs text-muted-foreground hover:text-accent"
-              onClick={() => { if (uiSoundEnabled) playClick() }}
+              href="/"
+              onClick={() => {
+                if (uiSoundEnabled) playClick()
+              }}
+              className="section-title min-w-0 truncate text-sm leading-tight text-foreground sm:text-base md:text-lg"
             >
-              ← {backLabel}
+              {t.blogTitle}
             </Link>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => { if (uiSoundEnabled) playClick(); setLanguage(language === "en" ? "fr" : "en") }}
-            className="sidebar-icon h-10 w-10 text-xs font-semibold"
-            title="Switch language"
+          <nav
+            className="hidden min-w-0 flex-1 items-center justify-center gap-2 overflow-x-auto py-2 md:flex [&::-webkit-scrollbar]:hidden"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            aria-label="Primary"
           >
-            {language.toUpperCase()}
-          </button>
-          <button
-            onClick={() => { if (uiSoundEnabled) playClick(); toggleTheme() }}
-            className="sidebar-icon h-10 w-10"
-            title="Toggle theme"
-          >
-            {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
-          </button>
-          <button
-            onClick={() => { if (uiSoundEnabled) playClick(); toggleUiSound() }}
-            className="sidebar-icon h-10 w-10"
-            title="Toggle sound & music"
-          >
-            {uiSoundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
-          </button>
+            <Link
+              href="/"
+              onClick={() => {
+                if (uiSoundEnabled) playClick()
+              }}
+              className={cn(
+                navPillBase,
+                pathname === "/"
+                  ? "bg-accent/35 text-foreground ring-2 ring-accent/45 shadow-[inset_0_0_0_1px_rgba(184,163,124,0.3)]"
+                  : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
+              )}
+            >
+              {t.home}
+            </Link>
+            <a
+              href={PORTFOLIO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => {
+                if (uiSoundEnabled) playClick()
+              }}
+              className="shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-medium tracking-wide text-foreground transition hover:bg-accent/20 hover:text-foreground sm:text-sm"
+            >
+              {t.blogNavPortfolioLink}
+              <span className="ml-0.5 opacity-70" aria-hidden>
+                ↗
+              </span>
+            </a>
+          </nav>
+
+          <div className="ml-auto flex items-center gap-1 sm:gap-1.5">
+            <div
+              className="hidden rounded-full bg-muted/70 p-0.5 ring-1 ring-border/40 sm:p-1 md:flex"
+              role="group"
+              aria-label="Language"
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  if (uiSoundEnabled) playClick()
+                  setLanguage("en")
+                }}
+                className={cn(
+                  "rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider transition sm:px-3 sm:py-1.5 sm:text-xs md:px-4 md:text-sm",
+                  language === "en"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                en
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (uiSoundEnabled) playClick()
+                  setLanguage("fr")
+                }}
+                className={cn(
+                  "rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider transition sm:px-3 sm:py-1.5 sm:text-xs md:px-4 md:text-sm",
+                  language === "fr"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                fr
+              </button>
+            </div>
+
+            <div className="hidden items-center gap-0.5 sm:gap-1 md:flex" aria-label="Display and audio">
+              <IconToolbarButton onClick={onThemeClick} label={themeLabel}>
+                {theme === "light" ? (
+                  <Moon size={18} strokeWidth={1.85} />
+                ) : (
+                  <Sun size={18} strokeWidth={1.85} />
+                )}
+              </IconToolbarButton>
+              <IconToolbarButton onClick={onSoundClick} label={soundLabel}>
+                {uiSoundEnabled ? (
+                  <Volume2 size={18} strokeWidth={1.85} />
+                ) : (
+                  <VolumeX size={18} strokeWidth={1.85} />
+                )}
+              </IconToolbarButton>
+            </div>
+
+            <div className="flex items-center gap-0.5 md:hidden" aria-label={t.quickSettings}>
+              <IconToolbarButton onClick={onThemeClick} label={themeLabel}>
+                {theme === "light" ? (
+                  <Moon size={17} strokeWidth={1.85} />
+                ) : (
+                  <Sun size={17} strokeWidth={1.85} />
+                )}
+              </IconToolbarButton>
+              <IconToolbarButton onClick={onSoundClick} label={soundLabel}>
+                {uiSoundEnabled ? (
+                  <Volume2 size={17} strokeWidth={1.85} />
+                ) : (
+                  <VolumeX size={17} strokeWidth={1.85} />
+                )}
+              </IconToolbarButton>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn(
+                      "flex h-9 min-w-[3.25rem] shrink-0 items-center justify-center gap-0.5 rounded-full px-2 text-muted-foreground ring-1 ring-border/50 transition hover:bg-muted hover:text-foreground hover:ring-border sm:h-10",
+                      "pixel-text text-[0.65rem] font-bold uppercase tracking-wider",
+                    )}
+                    aria-label={t.languageMenu}
+                  >
+                    {language}
+                    <ChevronDown className="size-3.5 shrink-0 opacity-70" aria-hidden />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  sideOffset={6}
+                  className="glass-panel z-[100] min-w-[10rem] border-border/60 p-1 shadow-lg"
+                >
+                  <DropdownMenuRadioGroup
+                    value={language}
+                    onValueChange={(v) => {
+                      if (uiSoundEnabled) playClick()
+                      setLanguage(v as Language)
+                    }}
+                  >
+                    <DropdownMenuRadioItem value="en" className="pixel-text cursor-pointer text-sm">
+                      English
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="fr" className="pixel-text cursor-pointer text-sm">
+                      Français
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (uiSoundEnabled) playClick()
+                setMobileMenuOpen(!mobileMenuOpen)
+              }}
+              className="flex size-10 items-center justify-center rounded-full bg-muted/70 text-foreground ring-2 ring-border/60 transition hover:bg-muted sm:size-11 md:hidden"
+              aria-expanded={mobileMenuOpen}
+              aria-label="Menu"
+            >
+              {mobileMenuOpen ? <X size={20} strokeWidth={2} /> : <Menu size={20} strokeWidth={2} />}
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {isMobile && (
+        <nav
+          className={cn(
+            "fixed left-0 right-0 z-40 transition-all duration-300 ease-out",
+            mobileMenuOpen
+              ? "pointer-events-auto translate-y-0 opacity-100"
+              : "pointer-events-none -translate-y-3 opacity-0",
+          )}
+          style={{
+            top: menuTopPx,
+            paddingLeft: "1rem",
+            paddingRight: "1rem",
+            paddingBottom: "1rem",
+          }}
+          aria-hidden={!mobileMenuOpen}
+        >
+          <div className="mx-auto max-w-6xl overflow-hidden rounded-3xl border border-border/70 bg-background/95 p-4 shadow-xl backdrop-blur-xl dark:border-border/80 dark:bg-card/95">
+            <div className="flex flex-col gap-1">
+              <Link
+                href="/"
+                onClick={() => {
+                  if (uiSoundEnabled) playClick()
+                  setMobileMenuOpen(false)
+                }}
+                style={{ transition: "all 0.25s ease-out" }}
+                className={cn(
+                  "rounded-xl px-3 py-3 text-left text-sm font-medium tracking-wide transition",
+                  pathname === "/"
+                    ? "bg-accent/35 text-foreground ring-2 ring-accent/40"
+                    : "text-foreground hover:bg-muted/80",
+                )}
+              >
+                {t.home}
+              </Link>
+              <a
+                href={PORTFOLIO_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  if (uiSoundEnabled) playClick()
+                  setMobileMenuOpen(false)
+                }}
+                style={{ transition: "all 0.25s ease-out 0.04s" }}
+                className="rounded-xl px-3 py-3 text-left text-sm font-medium text-foreground hover:bg-accent/20"
+              >
+                {t.blogNavPortfolioLink}
+                <span className="ml-1 opacity-70" aria-hidden>
+                  ↗
+                </span>
+              </a>
+            </div>
+          </div>
+        </nav>
+      )}
+    </>
   )
 }

@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
-import BlogShell from "@/components/blog/blog-shell"
 import PortableTextRenderer from "@/components/blog/portable-text-renderer"
 import VideoDemo from "@/components/blog/video-demo"
 import AuthorCard from "@/components/blog/author-card"
@@ -10,6 +9,7 @@ import TableOfContents from "@/components/blog/table-of-contents"
 import { getAllPostSlugs, getPostBySlug } from "@/lib/blog/api"
 import { estimateReadingTimeMinutes, formatPostDate } from "@/lib/blog/format"
 import { extractHeadings } from "@/lib/blog/toc"
+import { cn } from "@/lib/utils"
 
 type BlogPostPageProps = {
   params: Promise<{ slug: string }>
@@ -44,11 +44,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const headings = extractHeadings(post.body)
 
   return (
-    <BlogShell>
+    <>
       {/* ToC: fixed left sidebar on wide screens, sticky strip+dropdown on mobile */}
       {headings.length > 0 && <TableOfContents headings={headings} />}
 
-      <article className="pixel-border bg-card p-6 md:p-10">
+      <article className="glass-panel scroll-mt-28 p-6 md:p-10">
 
         {/* ── Meta row ── */}
         <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground md:text-sm">
@@ -80,10 +80,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </div>
 
         {/* ── Title ── */}
-        <h1 className="game-title mb-5 text-xl leading-snug md:text-3xl">{post.title}</h1>
+        <h1 className="section-title mb-5 text-xl leading-snug md:text-3xl">{post.title}</h1>
 
         {/* ── Excerpt ── */}
-        <p className="pixel-text mb-6 border-l-4 border-accent pl-4 text-sm leading-relaxed text-muted-foreground md:text-base">
+        <p className="body-copy mb-6 border-l-4 border-accent pl-4 text-muted-foreground">
           {post.excerpt}
         </p>
 
@@ -106,7 +106,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 href={post.liveDemo.codeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="pixel-border inline-flex items-center gap-2 border-2 border-border bg-muted px-3 py-2 text-xs md:text-sm font-bold text-foreground hover:border-accent hover:text-accent"
+                className="btn-muted-solid inline-flex items-center gap-2 text-xs md:text-sm"
               >
                 <span>{post.liveDemo.codeLabel || "View source code"}</span>
                 <span aria-hidden="true">&lt;/&gt;</span>
@@ -122,7 +122,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <Badge
                 key={tag}
                 variant="outline"
-                className="border-2 border-border text-[0.65rem] uppercase tracking-wide"
+                className={cn(
+                  "glass-chip border-0 text-[0.65rem] uppercase tracking-wide text-muted-foreground",
+                )}
               >
                 {tag}
               </Badge>
@@ -146,26 +148,26 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               Technologies covered
             </p>
             <div className="flex flex-wrap gap-2">
-              {post.technologies!.map((tech) => (
+              {post.technologies!.map((tech) =>
                 tech.website ? (
                   <a
                     key={tech._id}
                     href={tech.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="pixel-text inline-block border-2 border-border px-3 py-1 text-[0.65rem] uppercase tracking-wide transition-colors hover:border-accent hover:text-accent"
+                    className="glass-chip pixel-text inline-block border-0 px-3 py-1 text-[0.65rem] uppercase tracking-wide transition-colors hover:ring-1 hover:ring-accent/40"
                   >
                     {tech.name}
                   </a>
                 ) : (
                   <span
                     key={tech._id}
-                    className="pixel-text inline-block border-2 border-border px-3 py-1 text-[0.65rem] uppercase tracking-wide"
+                    className="glass-chip pixel-text inline-block border-0 px-3 py-1 text-[0.65rem] uppercase tracking-wide"
                   >
                     {tech.name}
                   </span>
-                )
-              ))}
+                ),
+              )}
             </div>
           </div>
         )}
@@ -176,6 +178,6 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           [ Back to Blog ]
         </Link>
       </div>
-    </BlogShell>
+    </>
   )
 }

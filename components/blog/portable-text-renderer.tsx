@@ -7,13 +7,14 @@ import CodeBlock from "@/components/blog/code-block"
 
 const components = {
   block: {
-    normal: ({ children }: any) => (
-      <p className="pixel-text mb-4 text-sm leading-7 md:text-[0.98rem] md:leading-8">{children}</p>
-    ),
+    normal: ({ children }: any) => <p className="body-copy mb-4">{children}</p>,
     h2: ({ children, value }: any) => {
       const id = slugify(value?.children?.map((s: any) => s.text ?? "").join("") ?? "")
       return (
-        <h2 id={id} className="game-title mt-10 mb-4 scroll-mt-24 text-lg md:text-2xl border-b-2 border-accent pb-2">
+        <h2
+          id={id}
+          className="section-title mt-10 mb-4 scroll-mt-28 border-b-2 border-accent pb-2 text-lg md:text-2xl"
+        >
           {children}
         </h2>
       )
@@ -21,7 +22,7 @@ const components = {
     h3: ({ children, value }: any) => {
       const id = slugify(value?.children?.map((s: any) => s.text ?? "").join("") ?? "")
       return (
-        <h3 id={id} className="game-title mt-8 mb-3 scroll-mt-24 text-base md:text-xl">
+        <h3 id={id} className="section-title mt-8 mb-3 scroll-mt-28 text-base md:text-xl">
           {children}
         </h3>
       )

@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react"
 import { Linkedin, Link2, Check } from "lucide-react"
 import { FaXTwitter } from "react-icons/fa6"
 import type { TocHeading } from "@/lib/blog/toc"
+import { cn } from "@/lib/utils"
 
 type Props = {
   headings: TocHeading[]
@@ -13,9 +14,9 @@ function Toast({ show, message }: { show: boolean; message: string }) {
   if (!show) return null
   return (
     <div
-      className="fixed z-100 pixel-border bg-card px-4 py-2 flex items-center gap-2"
-      style={{ 
-        top: "6rem",
+      className="glass-panel fixed z-[10050] flex items-center gap-2 px-4 py-2"
+      style={{
+        top: "calc(var(--site-header-offset) + 0.5rem)",
         left: "50%",
         transform: "translateX(-50%)",
         animation: "toastFadeIn 0.3s ease-out forwards",
@@ -25,11 +26,67 @@ function Toast({ show, message }: { show: boolean; message: string }) {
       <span className="pixel-text text-xs">{message}</span>
       <style jsx>{`
         @keyframes toastFadeIn {
-          from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+          }
         }
       `}</style>
     </div>
+  )
+}
+
+function NavList({
+  headings,
+  activeId,
+  onPick,
+  density,
+}: {
+  headings: TocHeading[]
+  activeId: string
+  onPick: (id: string) => void
+  density: "desktop" | "mobile"
+}) {
+  const isDesktop = density === "desktop"
+  const textLg = isDesktop ? "text-sm" : "text-[0.9375rem]"
+  const textSm = isDesktop ? "text-xs" : "text-sm"
+  const pad = isDesktop ? 16 : 14
+
+  return (
+    <ol className="space-y-0.5">
+      {headings.map(({ id, text, level }) => {
+        const isActive = id === activeId
+        const isH2 = level === 2
+        return (
+          <li key={id} style={{ paddingLeft: `${(level - 2) * pad}px` }}>
+            <button
+              type="button"
+              onClick={() => onPick(id)}
+              className={cn(
+                "pixel-text group flex w-full items-start gap-2.5 border-l-2 py-2 pl-3 text-left transition-all duration-150",
+                isH2 ? textLg : textSm,
+                isActive
+                  ? "border-accent text-accent"
+                  : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
+              )}
+            >
+              <span
+                className={cn(
+                  "mt-1 inline-block shrink-0 transition-all duration-150",
+                  isH2 ? "h-2 w-2" : "h-1.5 w-1.5",
+                  isActive ? "bg-accent" : "border border-current opacity-40 group-hover:opacity-70",
+                )}
+              />
+              <span className="line-clamp-3 leading-snug">{text}</span>
+            </button>
+          </li>
+        )
+      })}
+    </ol>
   )
 }
 
@@ -38,15 +95,34 @@ export default function TableOfContents({ headings }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState("")
   const [toastVisible, setToastVisible] = useState(false)
+  const [mobilePanelTop, setMobilePanelTop] = useState(120)
 
-  // Refs for direct DOM animation — bypass React state/re-render entirely
-  const stripRef = useRef<HTMLDivElement>(null)
-  const desktopSidebarRef = useRef<HTMLDivElement>(null)
+  const mobileStickyRef = useRef<HTMLDivElement>(null)
   const desktopProgressRef = useRef<HTMLDivElement>(null)
   const mobileProgressRef = useRef<HTMLDivElement>(null)
   const rafRef = useRef<number>(0)
 
-  // Scroll spy — track active heading
+  const updateMobilePanelAnchor = useCallback(() => {
+    const el = mobileStickyRef.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    setMobilePanelTop(r.bottom + 8)
+  }, [])
+
+  useLayoutEffect(() => {
+    updateMobilePanelAnchor()
+  }, [updateMobilePanelAnchor, mobileOpen])
+
+  useEffect(() => {
+    const onWin = () => updateMobilePanelAnchor()
+    window.addEventListener("scroll", onWin, { passive: true })
+    window.addEventListener("resize", onWin)
+    return () => {
+      window.removeEventListener("scroll", onWin)
+      window.removeEventListener("resize", onWin)
+    }
+  }, [updateMobilePanelAnchor])
+
   useEffect(() => {
     if (!headings.length) return
     const observer = new IntersectionObserver(
@@ -65,11 +141,9 @@ export default function TableOfContents({ headings }: Props) {
     return () => observer.disconnect()
   }, [headings])
 
-  // Resolve canonical share URL on client
   useEffect(() => {
     if (typeof window === "undefined") return
     const href = window.location.href
-    // Strip hash so shares point to top of article
     const clean = href.split("#")[0]
     setShareUrl(clean)
   }, [])
@@ -107,7 +181,6 @@ export default function TableOfContents({ headings }: Props) {
         },
       )
     } else {
-      // Fallback
       const textarea = document.createElement("textarea")
       textarea.value = url
       textarea.style.position = "fixed"
@@ -126,7 +199,6 @@ export default function TableOfContents({ headings }: Props) {
     }
   }, [shareUrl])
 
-  // Scroll-driven animations — direct DOM updates inside rAF, zero React overhead
   useEffect(() => {
     const onScroll = () => {
       cancelAnimationFrame(rafRef.current)
@@ -138,21 +210,16 @@ export default function TableOfContents({ headings }: Props) {
 
         if (desktopProgressRef.current) desktopProgressRef.current.style.width = pctStr
         if (mobileProgressRef.current) mobileProgressRef.current.style.width = pctStr
-        if (desktopSidebarRef.current) {
-          desktopSidebarRef.current.style.top = `${Math.max(92, 128 - sy)}px`
-        }
       })
     }
     window.addEventListener("scroll", onScroll, { passive: true })
-    onScroll() // seed on mount so values are correct from initial scroll position
+    onScroll()
     return () => {
       window.removeEventListener("scroll", onScroll)
       cancelAnimationFrame(rafRef.current)
     }
   }, [])
 
-  // Close dropdown on scroll — delayed so the micro-scroll from the tap that
-  // opened the dropdown doesn't immediately close it again.
   useEffect(() => {
     if (!mobileOpen) return
     const close = () => setMobileOpen(false)
@@ -165,16 +232,16 @@ export default function TableOfContents({ headings }: Props) {
     }
   }, [mobileOpen])
 
-  // Close dropdown on outside click
   useEffect(() => {
-    if (!mobileOpen) return
-    const onClickOutside = (e: MouseEvent) => {
-      if (stripRef.current && !stripRef.current.contains(e.target as Node)) {
-        setMobileOpen(false)
-      }
+    if (!mobileOpen) {
+      document.body.style.overflow = ""
+      return
     }
-    document.addEventListener("mousedown", onClickOutside)
-    return () => document.removeEventListener("mousedown", onClickOutside)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = prev
+    }
   }, [mobileOpen])
 
   const scrollTo = (id: string) => {
@@ -184,193 +251,159 @@ export default function TableOfContents({ headings }: Props) {
 
   const activeHeading = headings.find((h) => h.id === activeId)
 
-  const navList = (
-    <ol className="space-y-px">
-      {headings.map(({ id, text, level }) => {
-        const isActive = id === activeId
-        return (
-          <li key={id} style={{ paddingLeft: `${(level - 2) * 14}px` }}>
-            <button
-              onClick={() => scrollTo(id)}
-              className={`pixel-text group flex w-full items-start gap-2 border-l-2 py-1.5 pl-3 text-left transition-all duration-150 ${
-                isActive
-                  ? "border-accent text-accent"
-                  : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
-              }`}
-              style={{ fontSize: level === 2 ? "0.68rem" : "0.62rem" }}
-            >
-              <span
-                className={`mt-[3px] inline-block shrink-0 transition-all duration-150 ${
-                  level === 2 ? "h-[7px] w-[7px]" : "h-[5px] w-[5px]"
-                } ${isActive ? "bg-accent" : "border border-current opacity-40 group-hover:opacity-70"}`}
-              />
-              <span className="line-clamp-2 leading-[1.4]">{text}</span>
-            </button>
-          </li>
-        )
-      })}
-    </ol>
-  )
+  const shareBtnClassDesktop =
+    "glass-chip flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground ring-1 ring-border/35 transition-colors hover:text-accent"
 
   return (
     <>
       <Toast show={toastVisible} message="copied!" />
-      {/*
-        ══ DESKTOP FIXED SIDEBAR — left of article, min-[1440px]+ ══
-        Article is max-w-5xl (1024px = 512px half-width), centred.
-        "right: calc(50vw + 512px + 20px)" positions the sidebar's right
-        edge 20px to the left of the article's left edge at any viewport.
-        Width 170px → at 1440px sidebar occupies 28px–198px (plenty of room).
-      */}
-      {/*
-        sidebarTop: starts at 128px (= BlogShell's md:pt-32, the article card's
-        top edge on initial load). As you scroll it glides down to 92px (the
-        header bottom) and stays pinned there for the rest of the article.
-      */}
+
       <div
-        ref={desktopSidebarRef}
         className="fixed z-30 hidden min-[1440px]:block"
         style={{
-          top: "128px", // seed; immediately updated by the rAF scroll handler
+          top: "calc(var(--site-header-offset) + 0.5rem)",
           right: "calc(50vw + 512px + 20px)",
-          width: "170px",
+          width: "210px",
         }}
       >
-        <div className="pixel-border bg-card p-4">
+        <div className="glass-panel p-4">
           <div className="mb-4 flex items-center gap-2">
-            <span className="game-title text-[0.55rem] tracking-widest text-accent">[ INDEX ]</span>
-            <span className="h-px flex-1 bg-border" />
+            <span className="section-title text-xs tracking-widest text-accent">[ INDEX ]</span>
+            <span className="h-px flex-1 bg-border/70" />
           </div>
 
-          {/* Progress bar inside desktop sidebar */}
-          <div className="mb-4 h-[3px] w-full overflow-hidden bg-border">
-            <div ref={desktopProgressRef} className="h-full bg-accent" style={{ width: "0%" }} />
+          <div className="glass-chip mb-4 h-1.5 w-full overflow-hidden rounded-full">
+            <div ref={desktopProgressRef} className="h-full rounded-full bg-accent" style={{ width: "0%" }} />
           </div>
 
-          <nav aria-label="Article sections">{navList}</nav>
+          <nav aria-label="Article sections">
+            <NavList headings={headings} activeId={activeId} onPick={scrollTo} density="desktop" />
+          </nav>
 
-          <p className="pixel-text mt-4 border-t border-border pt-3 text-[0.58rem] text-muted-foreground">
+          <p className="pixel-text mt-4 border-t border-border/60 pt-3 text-xs text-muted-foreground">
             {headings.filter((h) => h.level === 2).length}&nbsp;sections
           </p>
         </div>
 
-        {/* Share card (desktop sidebar, separate from INDEX) */}
-        <div className="mt-3 pixel-border bg-card p-3">
-          <p className="pixel-text mb-2 text-[0.58rem] text-muted-foreground">Share</p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => handleShare("x")}
-              aria-label="Share on X"
-              className="pixel-border bg-background px-1.5 py-1.5 hover:bg-muted flex items-center justify-center"
-            >
-              <FaXTwitter size={14} />
+        <div className="glass-panel mt-3 p-3">
+          <p className="pixel-text mb-3 text-xs text-muted-foreground">Share</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <button type="button" onClick={() => handleShare("x")} aria-label="Share on X" className={shareBtnClassDesktop}>
+              <FaXTwitter size={16} />
             </button>
             <button
               type="button"
               onClick={() => handleShare("linkedin")}
               aria-label="Share on LinkedIn"
-              className="pixel-border bg-background px-1.5 py-1.5 hover:bg-muted flex items-center justify-center"
+              className={shareBtnClassDesktop}
             >
-              <Linkedin size={14} />
+              <Linkedin size={16} />
             </button>
-            <button
-              type="button"
-              onClick={handleCopyLink}
-              aria-label="Copy link"
-              className="pixel-border bg-background px-1.5 py-1.5 hover:bg-muted flex items-center justify-center"
-            >
-              <Link2 size={14} />
+            <button type="button" onClick={handleCopyLink} aria-label="Copy link" className={shareBtnClassDesktop}>
+              <Link2 size={16} />
             </button>
           </div>
         </div>
       </div>
 
-      {/*
-        ══ MOBILE / TABLET STICKY STRIP — below header, < min-[1440px] ══
-        Sticks at top: 92px (= header height) so it sits flush under the
-        fixed header the moment you start scrolling.
-        Shows: accent progress bar + current section name + [ ▼ ] toggle.
-        Expands into a dropdown panel with the full ToC.
-      */}
+      {/* Mobile: sticky strip only (progress + toggle) — layout height unchanged when menu opens */}
       <div
-        ref={stripRef}
+        ref={mobileStickyRef}
         className="sticky z-40 min-[1440px]:hidden"
-        style={{ top: "92px" }}
+        style={{ top: "var(--site-header-offset)" }}
       >
-        {/* ── Progress bar ── */}
-        <div className="h-[3px] bg-border">
-          <div ref={mobileProgressRef} className="h-full bg-accent" style={{ width: "0%" }} />
+        <div className="glass-chip h-1.5 w-full overflow-hidden rounded-full">
+          <div ref={mobileProgressRef} className="h-full rounded-full bg-accent" style={{ width: "0%" }} />
         </div>
 
-        {/* ── Section indicator + toggle ── */}
         <button
+          type="button"
           onClick={() => setMobileOpen((o) => !o)}
           aria-expanded={mobileOpen}
-          className="flex w-full items-center justify-between border-b-2 border-border bg-background/95 px-4 py-2.5 backdrop-blur"
+          className="glass-panel flex w-full items-center justify-between border-t-0 px-4 py-3"
         >
-          <span className="pixel-text flex min-w-0 items-center gap-2 text-[0.65rem]">
+          <span className="pixel-text flex min-w-0 items-center gap-2.5 text-sm">
             <span
               className="shrink-0 text-accent transition-transform duration-200"
               style={{ display: "inline-block", transform: mobileOpen ? "rotate(90deg)" : "rotate(0deg)" }}
             >
               ▶
             </span>
-            <span className="truncate text-muted-foreground">
-              {activeHeading?.text ?? "Introduction"}
-            </span>
+            <span className="truncate font-medium text-foreground">{activeHeading?.text ?? "Introduction"}</span>
           </span>
-          <span className="game-title ml-3 shrink-0 text-[0.5rem] tracking-widest text-accent">
+          <span className="section-title ml-3 shrink-0 text-[0.65rem] tracking-widest text-accent">
             {mobileOpen ? "[ ▲ ]" : "[ ▼ ]"}
           </span>
         </button>
+      </div>
 
-        {/* ── Dropdown panel ── */}
-        {mobileOpen && (
-          <div className="max-h-[55vh] overflow-y-auto border-b-2 border-x-2 border-border bg-card px-4 py-4 shadow-xl">
-            <div className="mb-3 flex items-center gap-2">
-              <span className="game-title text-[0.55rem] tracking-widest text-accent">[ INDEX ]</span>
-              <span className="h-px flex-1 bg-border" />
+      {/* Mobile overlay: index + share — floats above article, no reflow */}
+      {mobileOpen && (
+        <>
+          <button
+            type="button"
+            aria-label="Close table of contents"
+            className="fixed inset-0 z-[48] bg-background/55 backdrop-blur-[2px] dark:bg-background/70"
+            onClick={() => setMobileOpen(false)}
+          />
+          <div
+            className="fixed left-3 right-3 z-[49] flex max-h-[min(72vh,calc(100dvh-env(safe-area-inset-bottom)-1rem))] flex-col overflow-hidden rounded-2xl border border-border/50 shadow-2xl sm:left-4 sm:right-4"
+            style={{ top: mobilePanelTop }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Article index"
+          >
+            <div className="glass-panel flex max-h-full min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border-0 p-0">
+              <div className="border-b border-border/40 px-4 pb-2 pt-4">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="section-title text-xs tracking-widest text-accent">[ INDEX ]</span>
+                  <span className="h-px flex-1 bg-border/70" />
+                </div>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-2">
+                <nav aria-label="Article sections">
+                  <NavList headings={headings} activeId={activeId} onPick={scrollTo} density="mobile" />
+                </nav>
+              </div>
+
+              <div className="border-t border-border/40 bg-muted/20 px-3 py-3 dark:bg-muted/10">
+                <p className="section-title mb-2.5 text-center text-[0.65rem] tracking-widest text-muted-foreground">
+                  Share
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleShare("x")}
+                    className="glass-chip flex flex-col items-center gap-1.5 rounded-xl py-3 ring-1 ring-border/40 transition hover:ring-accent/35"
+                  >
+                    <FaXTwitter size={20} className="text-foreground" />
+                    <span className="pixel-text text-[0.65rem] text-muted-foreground">X</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleShare("linkedin")}
+                    className="glass-chip flex flex-col items-center gap-1.5 rounded-xl py-3 ring-1 ring-border/40 transition hover:ring-accent/35"
+                  >
+                    <Linkedin size={20} className="text-foreground" />
+                    <span className="pixel-text text-[0.6rem] text-muted-foreground">in</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleCopyLink()
+                      setMobileOpen(false)
+                    }}
+                    className="glass-chip flex flex-col items-center gap-1.5 rounded-xl py-3 ring-1 ring-border/40 transition hover:ring-accent/35"
+                  >
+                    <Link2 size={20} className="text-foreground" />
+                    <span className="pixel-text text-[0.65rem] text-muted-foreground">Copy</span>
+                  </button>
+                </div>
+              </div>
             </div>
-            <nav aria-label="Article sections">{navList}</nav>
           </div>
-        )}
-      </div>
-
-      {/* Share card (mobile / tablet, under the sticky INDEX strip) */}
-      <div className="min-[1440px]:hidden px-4 pt-3">
-        <div className="pixel-border bg-card px-3 py-2">
-          <div className="mb-1 flex items-center justify-between gap-2">
-            <span className="game-title text-[0.55rem] tracking-widest text-accent">[ SHARE ]</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => handleShare("x")}
-              aria-label="Share on X"
-              className="pixel-border bg-background px-1.5 py-1.5 hover:bg-muted flex items-center justify-center"
-            >
-              <FaXTwitter size={14} />
-            </button>
-            <button
-              type="button"
-              onClick={() => handleShare("linkedin")}
-              aria-label="Share on LinkedIn"
-              className="pixel-border bg-background px-1.5 py-1.5 hover:bg-muted flex items-center justify-center"
-            >
-              <Linkedin size={14} />
-            </button>
-            <button
-              type="button"
-              onClick={handleCopyLink}
-              aria-label="Copy link"
-              className="pixel-border bg-background px-1.5 py-1.5 hover:bg-muted flex items-center justify-center"
-            >
-              <Link2 size={14} />
-            </button>
-          </div>
-        </div>
-      </div>
+        </>
+      )}
     </>
   )
 }

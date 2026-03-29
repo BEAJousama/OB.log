@@ -1,94 +1,94 @@
 "use client"
 
-import { is } from "date-fns/locale"
 import { useEffect, useState } from "react"
+import { cn } from "@/lib/utils"
 
-export default function CustomCursor() {
-  const [position, setPosition] = useState({ x: 0, y: 0 })
-  const [isHovering, setIsHovering] = useState(false)
-  const [hoverSize, setHoverSize] = useState({ width: 0, height: 0 })
-  const [isMobile, setIsMobile] = useState(false)
+/** Tight halo so the ring hugs the control (not a large margin). */
+const HOVER_PADDING_PX = 4
+
+const CLICKABLE_SELECTOR =
+  "a[href], button, [role='button'], [role='menuitem'], [role='option'], .retro-button, .sidebar-icon, .social-icon, input:not([type='hidden']), textarea, select, summary, label[for]"
+
+function useFinePointerNoReducedMotion(): boolean {
+  const [ok, setOk] = useState(false)
 
   useEffect(() => {
-    // Check if device is mobile
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
+    const mqFine = window.matchMedia("(pointer: fine)")
+    const mqReduce = window.matchMedia("(prefers-reduced-motion: reduce)")
 
-    const updateCursor = (e: MouseEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY })
+    const sync = () => setOk(mqFine.matches && !mqReduce.matches)
 
-      const target = e.target as HTMLElement
-      const isClickable = target.closest("a, button, [role='button'], .retro-button, .sidebar-icon, .social-icon")
-
-      if (isClickable) {
-        const rect = isClickable.getBoundingClientRect()
-        setIsHovering(true)
-        setHoverSize({
-          width: rect.width + 16,
-          height: rect.height + 16,
-        })
-        setPosition({ 
-          x: rect.left + rect.width / 2, 
-          y: rect.top + rect.height / 2 
-        })
-      } else {
-        setIsHovering(false)
-      }
-    }
-
-    window.addEventListener("mousemove", updateCursor)
-
-    
+    sync()
+    mqFine.addEventListener("change", sync)
+    mqReduce.addEventListener("change", sync)
     return () => {
-      window.removeEventListener("mousemove", updateCursor)
-      window.removeEventListener('resize', checkMobile)
+      mqFine.removeEventListener("change", sync)
+      mqReduce.removeEventListener("change", sync)
     }
   }, [])
 
-  // Don't render cursor on mobile
-  if (isMobile) return null
+  return ok
+}
+
+export default function CustomCursor() {
+  const enabled = useFinePointerNoReducedMotion()
+  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [hover, setHover] = useState<{
+    width: number
+    height: number
+    borderRadius: string
+  } | null>(null)
+
+  useEffect(() => {
+    if (!enabled) return
+
+    const updateCursor = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      const clickable = target.closest(CLICKABLE_SELECTOR) as HTMLElement | null
+
+      if (clickable && !clickable.closest("[data-cursor-default]")) {
+        const rect = clickable.getBoundingClientRect()
+        const cs = window.getComputedStyle(clickable)
+        let radius = cs.borderRadius
+        if (!radius || radius === "0px") {
+          radius = "1rem"
+        }
+        setHover({
+          width: rect.width + HOVER_PADDING_PX,
+          height: rect.height + HOVER_PADDING_PX,
+          borderRadius: radius,
+        })
+        setPosition({
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+        })
+      } else {
+        setHover(null)
+        setPosition({ x: e.clientX, y: e.clientY })
+      }
+    }
+
+    window.addEventListener("mousemove", updateCursor, { passive: true })
+
+    return () => {
+      window.removeEventListener("mousemove", updateCursor)
+    }
+  }, [enabled])
+
+  if (!enabled) return null
 
   return (
-    <>
-      <div
-        className="custom-cursor"
-        style={{
-          left: `${position.x}px`,
-          top: `${position.y}px`,
-          width: isHovering ? `${hoverSize.width}px` : "24px",
-          height: isHovering ? `${hoverSize.height}px` : "24px",
-        }}
-      />
-      <style jsx>{`
-        .custom-cursor {
-          position: fixed;
-          pointer-events: none;
-          z-index: 99999;
-          transform: translate(-50%, -50%);
-          transition: width 0.2s ease, height 0.2s ease;
-          border: 3px solid var(--accent);
-          background: transparent;
-          box-shadow: 
-            inset 0 0 0 2px var(--background),
-            0 0 0 1px var(--foreground);
-        }
-        
-        .custom-cursor::before {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 6px;
-          height: 6px;
-          background: var(--accent);
-          border: 1px solid var(--foreground);
-        }
-      `}</style>
-    </>
+    <div
+      className={cn("custom-cursor", hover && "custom-cursor--hover")}
+      style={{
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        width: hover ? `${hover.width}px` : "22px",
+        height: hover ? `${hover.height}px` : "22px",
+        borderRadius: hover ? hover.borderRadius : undefined,
+      }}
+    >
+      <span className="custom-cursor__dot" aria-hidden />
+    </div>
   )
 }

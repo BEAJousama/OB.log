@@ -6,7 +6,9 @@ export const translations = {
     skills: "Skills",
     projects: "Projects",
     contact: "Contact",
-    
+    quickSettings: "Quick settings",
+    languageMenu: "Language",
+
     // Hero (aligned with CV summary)
     heroTitle: "Hi there",
     heroDesc1: "Fullstack Engineer with practical experience building and maintaining web applications using Next.js, React, Node.js, and Sanity CMS. I've worked on high-visibility client projects, delivering fast and SEO-friendly websites.",
@@ -98,6 +100,7 @@ export const translations = {
     blogNextPage: "Next page",
     blogBackToPortfolio: "Back to Portfolio",
     blogBackToBlog: "Back to blog",
+    blogNavPortfolioLink: "Portfolio",
   },
   fr: {
     // Navigation
@@ -106,7 +109,9 @@ export const translations = {
     skills: "Compétences",
     projects: "Projets",
     contact: "Contact",
-    
+    quickSettings: "Réglages rapides",
+    languageMenu: "Langue",
+
     // Hero (aligned with CV summary)
     heroTitle: "Bonjour",
     heroDesc1: "Ingénieur Fullstack avec une expérience pratique en développement et maintenance d'applications web avec Next.js, React, Node.js et Sanity CMS. J'ai travaillé sur des projets clients à forte visibilité, livrant des sites rapides et optimisés SEO.",
@@ -198,6 +203,7 @@ export const translations = {
     blogNextPage: "Page suivante",
     blogBackToPortfolio: "Retour au Portfolio",
     blogBackToBlog: "Retour au blog",
+    blogNavPortfolioLink: "Portfolio",
   },
 }
 

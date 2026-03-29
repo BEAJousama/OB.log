@@ -40,7 +40,7 @@ const warmBeige: Record<string, React.CSSProperties> = {
     background: undefined,
     backgroundColor: "transparent",
     color: "var(--code-fg)",
-    fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+    fontFamily: 'var(--font-jetbrains-mono), "Courier New", monospace',
   },
 }
 
@@ -58,7 +58,7 @@ const darkTheme: Record<string, React.CSSProperties> = {
     ...((vscDarkPlus as any)['code[class*="language-"]'] ?? {}),
     background: undefined,
     backgroundColor: "transparent",
-    fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+    fontFamily: 'var(--font-jetbrains-mono), "Courier New", monospace',
   },
 }
 
@@ -117,7 +117,7 @@ export default function CodeBlock({ code, language = "text", filename }: Props) 
         }}
         codeTagProps={{
           style: {
-            fontFamily: '"JetBrains Mono", "Fira Code", Consolas, monospace',
+            fontFamily: 'var(--font-jetbrains-mono), "Courier New", Consolas, monospace',
           },
         }}
       >

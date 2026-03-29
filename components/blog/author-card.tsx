@@ -34,7 +34,7 @@ export default function AuthorCard({ author }: Props) {
         )}
 
         <div className="min-w-0">
-          <p className="game-title text-base md:text-lg">{author.name}</p>
+          <p className="section-title text-base md:text-lg">{author.name}</p>
           {author.role && (
             <p className="pixel-text mb-2 text-xs uppercase tracking-widest text-accent">
               {author.role}

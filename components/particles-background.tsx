@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react"
 
 export default function ParticlesBackground() {
-  const [particles, setParticles] = useState<{ id: number; x: number; y: number; size: number; delay: number }[]>([])
+  const [particles, setParticles] = useState<
+    { id: number; x: number; y: number; size: number; delay: number; duration: number }[]
+  >([])
 
   useEffect(() => {
     setParticles(
@@ -11,42 +13,34 @@ export default function ParticlesBackground() {
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
-        size: Math.random() * 4 + 1,
-        delay: Math.random() * 5,
-      }))
+        size: 1.5 + Math.random() * 3.5,
+        delay: Math.random() * 8,
+        duration: 18 + Math.random() * 14,
+      })),
     )
   }, [])
 
   return (
     <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          pointerEvents: "none",
-          overflow: "hidden",
-          zIndex: 0,
-        }}
-      >
-        {particles.map((p) => (
-          <div
-            key={p.id}
-            style={{
-              position: "absolute",
-              left: `${p.x}%`,
-              top: `${p.y}%`,
-              width: `${p.size}px`,
-              height: `${p.size}px`,
-              borderRadius: "50%",
-              background: "var(--particle-color)",
-              opacity: "var(--particle-opacity)",
-              animation: `float ${6 + p.delay}s ease-in-out infinite`,
-              animationDelay: `${p.delay}s`,
-            }}
-          />
-        ))}
+      className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+      aria-hidden
+    >
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="absolute rounded-full"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            background: "var(--particle-color)",
+            opacity: "var(--particle-opacity)",
+            animation: `particle-float ${p.duration}s ease-in-out infinite`,
+            animationDelay: `${p.delay}s`,
+          }}
+        />
+      ))}
     </div>
   )
 }
