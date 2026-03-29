@@ -2,8 +2,11 @@
 
 import Link from "next/link"
 import { FileQuestion, Home, ArrowLeft } from "lucide-react"
+import { useLanguage } from "@/contexts/LanguageContext"
 
 export default function BlogPostNotFound() {
+  const { t } = useLanguage()
+
   return (
     <div className="relative flex min-h-[60vh] flex-col items-center justify-center py-12 text-center">
       {/* Background grid */}
@@ -53,18 +56,18 @@ export default function BlogPostNotFound() {
         </div>
 
         <h1 className="section-title mb-2 text-4xl md:text-5xl" style={{ color: "var(--accent)" }}>
-          POST NOT FOUND
+          {t.blogNotFoundTitle}
         </h1>
         <p className="section-title mb-6 text-lg text-muted-foreground md:text-xl">
-          404 · Article missing
+          {t.blogNotFoundSubtitle}
         </p>
 
         <div className="glass-panel mb-8 p-6">
           <p className="pixel-text text-sm md:text-base text-muted-foreground mb-2">
-            This article doesn&apos;t exist yet or is still unpublished.
+            {t.blogNotFoundBody1}
           </p>
           <p className="pixel-text text-xs md:text-sm text-muted-foreground">
-            Maybe it was never written, or it got lost in the CMS.
+            {t.blogNotFoundBody2}
           </p>
         </div>
 
@@ -74,14 +77,14 @@ export default function BlogPostNotFound() {
             className="retro-button inline-flex items-center justify-center gap-2 text-sm font-semibold px-6 py-3 whitespace-nowrap w-fit"
           >
             <ArrowLeft size={18} className="shrink-0" />
-            <span>[ Back to Blog ]</span>
+            <span>[ {t.blogBackToBlog} ]</span>
           </Link>
           <Link
             href="/"
             className="blog-404-home-button inline-flex items-center justify-center gap-2 text-sm font-semibold px-6 py-3 whitespace-nowrap w-fit"
           >
             <Home size={18} className="shrink-0" />
-            <span>[ Home ]</span>
+            <span>[ {t.home} ]</span>
           </Link>
         </div>
 
@@ -92,7 +95,7 @@ export default function BlogPostNotFound() {
           </div>
           <div>
             <span className="text-accent">STATUS</span>
-            <p>NOT FOUND</p>
+            <p>{t.blogNotFoundStatus}</p>
           </div>
         </div>
       </div>

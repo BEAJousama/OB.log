@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from "react"
 import type { VideoDemo as VideoDemoType } from "@/lib/blog/types"
+import { useLanguage } from "@/contexts/LanguageContext"
 
 function getEmbedUrl(url: string): { type: "youtube" | "vimeo" | "direct" | "unknown"; embedUrl: string } {
   // YouTube
@@ -31,6 +32,7 @@ type Props = {
 }
 
 export default function VideoDemo({ video }: Props) {
+  const { t } = useLanguage()
   // Prefer uploaded file, then external URL
   const sourceUrl = video?.fileUrl ?? video?.url
   if (!sourceUrl) return null
@@ -57,7 +59,7 @@ export default function VideoDemo({ video }: Props) {
           <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
             <iframe
               src={embedUrl}
-              title={video.caption ?? "Demo video"}
+              title={video.caption ?? t.blogDemoVideoTitle}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
               className="absolute inset-0 h-full w-full border-0"
@@ -73,7 +75,7 @@ export default function VideoDemo({ video }: Props) {
               rel="noopener noreferrer"
               className="pixel-text text-sm text-accent underline underline-offset-4 hover:opacity-80 transition-opacity"
             >
-              ▶ Watch demo video
+              ▶ {t.blogWatchDemoVideo}
             </a>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { Linkedin, Link2, Check } from "lucide-react"
 import { FaXTwitter } from "react-icons/fa6"
 import type { TocHeading } from "@/lib/blog/toc"
 import { cn } from "@/lib/utils"
+import { useLanguage } from "@/contexts/LanguageContext"
 
 type Props = {
   headings: TocHeading[]
@@ -91,6 +92,7 @@ function NavList({
 }
 
 export default function TableOfContents({ headings }: Props) {
+  const { t } = useLanguage()
   const [activeId, setActiveId] = useState(headings[0]?.id ?? "")
   const [mobileOpen, setMobileOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState("")
@@ -152,7 +154,7 @@ export default function TableOfContents({ headings }: Props) {
     (platform: "x" | "linkedin") => {
       if (typeof window === "undefined") return
       const url = encodeURIComponent(shareUrl || window.location.href)
-      const text = encodeURIComponent(document.title || "OB.log article")
+      const text = encodeURIComponent(document.title || t.blogTitle)
 
       let shareLink = ""
       if (platform === "x") {
@@ -163,7 +165,7 @@ export default function TableOfContents({ headings }: Props) {
 
       window.open(shareLink, "_blank", "noopener,noreferrer")
     },
-    [shareUrl],
+    [shareUrl, t.blogTitle],
   )
 
   const handleCopyLink = useCallback(() => {
@@ -256,7 +258,7 @@ export default function TableOfContents({ headings }: Props) {
 
   return (
     <>
-      <Toast show={toastVisible} message="copied!" />
+      <Toast show={toastVisible} message={t.blogCopied} />
 
       <div
         className="fixed z-30 hidden min-[1440px]:block"
@@ -268,7 +270,7 @@ export default function TableOfContents({ headings }: Props) {
       >
         <div className="glass-panel p-4">
           <div className="mb-4 flex items-center gap-2">
-            <span className="section-title text-xs tracking-widest text-accent">[ INDEX ]</span>
+            <span className="section-title text-xs tracking-widest text-accent">[ {t.blogIndexTitle} ]</span>
             <span className="h-px flex-1 bg-border/70" />
           </div>
 
@@ -276,30 +278,30 @@ export default function TableOfContents({ headings }: Props) {
             <div ref={desktopProgressRef} className="h-full rounded-full bg-accent" style={{ width: "0%" }} />
           </div>
 
-          <nav aria-label="Article sections">
+          <nav aria-label={t.blogArticleSections}>
             <NavList headings={headings} activeId={activeId} onPick={scrollTo} density="desktop" />
           </nav>
 
           <p className="pixel-text mt-4 border-t border-border/60 pt-3 text-xs text-muted-foreground">
-            {headings.filter((h) => h.level === 2).length}&nbsp;sections
+            {headings.filter((h) => h.level === 2).length}&nbsp;{t.blogSectionsCount}
           </p>
         </div>
 
         <div className="glass-panel mt-3 p-3">
-          <p className="pixel-text mb-3 text-xs text-muted-foreground">Share</p>
+          <p className="pixel-text mb-3 text-xs text-muted-foreground">{t.blogShare}</p>
           <div className="flex flex-wrap justify-center gap-2">
-            <button type="button" onClick={() => handleShare("x")} aria-label="Share on X" className={shareBtnClassDesktop}>
+            <button type="button" onClick={() => handleShare("x")} aria-label={t.blogShareOnX} className={shareBtnClassDesktop}>
               <FaXTwitter size={16} />
             </button>
             <button
               type="button"
               onClick={() => handleShare("linkedin")}
-              aria-label="Share on LinkedIn"
+              aria-label={t.blogShareOnLinkedIn}
               className={shareBtnClassDesktop}
             >
               <Linkedin size={16} />
             </button>
-            <button type="button" onClick={handleCopyLink} aria-label="Copy link" className={shareBtnClassDesktop}>
+            <button type="button" onClick={handleCopyLink} aria-label={t.blogCopyLink} className={shareBtnClassDesktop}>
               <Link2 size={16} />
             </button>
           </div>
@@ -329,7 +331,7 @@ export default function TableOfContents({ headings }: Props) {
             >
               ▶
             </span>
-            <span className="truncate font-medium text-foreground">{activeHeading?.text ?? "Introduction"}</span>
+            <span className="truncate font-medium text-foreground">{activeHeading?.text ?? t.blogIntroduction}</span>
           </span>
           <span className="section-title ml-3 shrink-0 text-[0.65rem] tracking-widest text-accent">
             {mobileOpen ? "[ ▲ ]" : "[ ▼ ]"}
@@ -342,7 +344,7 @@ export default function TableOfContents({ headings }: Props) {
         <>
           <button
             type="button"
-            aria-label="Close table of contents"
+            aria-label={t.blogCloseIndex}
             className="fixed inset-0 z-[48] bg-background/55 backdrop-blur-[2px] dark:bg-background/70"
             onClick={() => setMobileOpen(false)}
           />
@@ -351,24 +353,24 @@ export default function TableOfContents({ headings }: Props) {
             style={{ top: mobilePanelTop }}
             role="dialog"
             aria-modal="true"
-            aria-label="Article index"
+            aria-label={t.blogArticleSections}
           >
             <div className="glass-panel flex max-h-full min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border-0 p-0">
               <div className="border-b border-border/40 px-4 pb-2 pt-4">
                 <div className="mb-2 flex items-center gap-2">
-                  <span className="section-title text-xs tracking-widest text-accent">[ INDEX ]</span>
+                  <span className="section-title text-xs tracking-widest text-accent">[ {t.blogIndexTitle} ]</span>
                   <span className="h-px flex-1 bg-border/70" />
                 </div>
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-2">
-                <nav aria-label="Article sections">
+                <nav aria-label={t.blogArticleSections}>
                   <NavList headings={headings} activeId={activeId} onPick={scrollTo} density="mobile" />
                 </nav>
               </div>
 
               <div className="border-t border-border/40 bg-muted/20 px-3 py-3 dark:bg-muted/10">
                 <p className="section-title mb-2.5 text-center text-[0.65rem] tracking-widest text-muted-foreground">
-                  Share
+                  {t.blogShare}
                 </p>
                 <div className="grid grid-cols-3 gap-2">
                   <button
@@ -396,7 +398,7 @@ export default function TableOfContents({ headings }: Props) {
                     className="glass-chip flex flex-col items-center gap-1.5 rounded-xl py-3 ring-1 ring-border/40 transition hover:ring-accent/35"
                   >
                     <Link2 size={20} className="text-foreground" />
-                    <span className="pixel-text text-[0.65rem] text-muted-foreground">Copy</span>
+                    <span className="pixel-text text-[0.65rem] text-muted-foreground">{t.blogCopyLink}</span>
                   </button>
                 </div>
               </div>

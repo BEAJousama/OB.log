@@ -10,6 +10,7 @@ import { getAllPostSlugs, getPostBySlug } from "@/lib/blog/api"
 import { estimateReadingTimeMinutes, formatPostDate } from "@/lib/blog/format"
 import { extractHeadings } from "@/lib/blog/toc"
 import { cn } from "@/lib/utils"
+import { getServerTranslations } from "@/lib/server-language"
 
 type BlogPostPageProps = {
   params: Promise<{ slug: string }>
@@ -35,6 +36,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params
   const { post, source } = await getPostBySlug(slug)
+  const t = await getServerTranslations()
 
   if (!post) notFound()
 
@@ -54,11 +56,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground md:text-sm">
           <span>{formatPostDate(post.publishedAt)}</span>
           <span>•</span>
-          <span>{readingTime} min read</span>
+          <span>{readingTime} {t.blogReadTimeSuffix}</span>
           {source === "mock" && (
             <>
               <span>•</span>
-              <span>Starter content</span>
+              <span>{t.blogStarterContent}</span>
             </>
           )}
           {hasCategories && (
@@ -97,7 +99,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 rel="noopener noreferrer"
                 className="retro-button inline-flex items-center gap-2 text-xs md:text-sm font-bold"
               >
-                <span>{post.liveDemo.label || "View live demo"}</span>
+                <span>{post.liveDemo.label || t.blogViewLiveDemo}</span>
                 <span aria-hidden="true">↗</span>
               </a>
             )}
@@ -108,7 +110,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 rel="noopener noreferrer"
                 className="btn-muted-solid inline-flex items-center gap-2 text-xs md:text-sm"
               >
-                <span>{post.liveDemo.codeLabel || "View source code"}</span>
+                <span>{post.liveDemo.codeLabel || t.blogViewSourceCode}</span>
                 <span aria-hidden="true">&lt;/&gt;</span>
               </a>
             )}
@@ -145,7 +147,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         {hasTechnologies && (
           <div className="mt-10 border-t-2 border-border pt-6">
             <p className="pixel-text mb-3 text-xs uppercase tracking-widest text-muted-foreground">
-              Technologies covered
+              {t.blogTechnologiesCovered}
             </p>
             <div className="flex flex-wrap gap-2">
               {post.technologies!.map((tech) =>
@@ -175,7 +177,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
       <div className="mt-6">
         <Link href="/" className="retro-button inline-flex items-center text-xs font-semibold md:text-sm">
-          [ Back to Blog ]
+          [ {t.blogBackToBlog} ]
         </Link>
       </div>
     </>

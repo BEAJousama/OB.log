@@ -5,8 +5,10 @@ import { LanguageProvider } from "@/contexts/LanguageContext"
 import { ThemeProvider } from "@/contexts/ThemeContext"
 import { SoundProvider } from "@/contexts/SoundContext"
 import { IntroProvider } from "@/contexts/IntroContext"
+import { CursorLuxProvider } from "@/contexts/CursorLuxContext"
 import ParticlesBackground from "@/components/particles-background"
 import CustomCursor from "@/components/custom-cursor"
+import CursorLuxTracker from "@/components/cursor-lux-tracker"
 import BlogHeader from "@/components/blog/blog-header"
 import BackgroundMusic from "@/components/background-music"
 import SiteIntro from "@/components/site-intro"
@@ -36,18 +38,21 @@ export default function BlogShell({ children }: BlogShellProps) {
   return (
     <SoundProvider>
       <ThemeProvider>
-        <IntroProvider>
-          <LanguageProvider>
-            <div className="min-h-dvh bg-background text-foreground">
-              <ParticlesBackground />
-              <CustomCursor />
-              <BackgroundMusic />
-              <BlogHeader />
-              <SiteIntro />
-              <BlogMain>{children}</BlogMain>
-            </div>
-          </LanguageProvider>
-        </IntroProvider>
+        <CursorLuxProvider>
+          <IntroProvider>
+            <LanguageProvider>
+              <div className="min-h-dvh bg-background text-foreground">
+                <ParticlesBackground />
+                <CustomCursor />
+                <CursorLuxTracker />
+                <BackgroundMusic />
+                <BlogHeader />
+                <SiteIntro />
+                <BlogMain>{children}</BlogMain>
+              </div>
+            </LanguageProvider>
+          </IntroProvider>
+        </CursorLuxProvider>
       </ThemeProvider>
     </SoundProvider>
   )

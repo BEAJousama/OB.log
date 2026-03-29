@@ -375,6 +375,122 @@
     0 -1px 0 color-mix(in srgb, #000 25%, transparent) inset;
 }
 
+/* Cursor lux: subtle radial highlight on glass targets */
+:is(.glass-panel, .glass-chip, .glass-inset, .skill-item) {
+  position: relative;
+}
+
+html.cursor-lux-enabled :is(.glass-panel, .glass-chip, .glass-inset, .skill-item)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(
+      170px circle at var(--lux-x, 50%) var(--lux-y, 50%),
+      color-mix(in srgb, #fff 24%, var(--accent) 9%),
+      color-mix(in srgb, #fff 8%, transparent) 38%,
+      transparent 74%
+    );
+  transition: opacity 180ms ease;
+}
+
+html.cursor-lux-enabled :is(.glass-panel, .glass-chip, .glass-inset, .skill-item).lux-active::before {
+  opacity: 0.28;
+}
+
+html.dark.cursor-lux-enabled :is(.glass-panel, .glass-chip, .glass-inset, .skill-item)::before {
+  background:
+    radial-gradient(
+      185px circle at var(--lux-x, 50%) var(--lux-y, 50%),
+      color-mix(in srgb, #fff 20%, var(--accent) 8%),
+      color-mix(in srgb, #fff 7%, transparent) 42%,
+      transparent 76%
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.cursor-lux-enabled :is(.glass-panel, .glass-chip, .glass-inset, .skill-item)::before {
+    transition: none;
+  }
+}
+
+/* Segmented controls with sliding active capsule */
+.segmented-control {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--border) 76%, var(--foreground) 10%);
+  background: color-mix(in srgb, var(--muted) 72%, transparent);
+  padding: 0.2rem;
+  min-width: 7rem;
+}
+
+.segmented-control__capsule {
+  position: absolute;
+  top: 0.2rem;
+  left: 0.2rem;
+  width: calc(50% - 0.2rem);
+  height: calc(100% - 0.4rem);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 82%, var(--foreground) 10%);
+  box-shadow:
+    0 1px 10px -4px color-mix(in srgb, var(--foreground) 14%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #fff 20%, transparent);
+  transition: transform 260ms cubic-bezier(0.33, 1, 0.68, 1);
+  will-change: transform;
+  z-index: 0;
+}
+
+.segmented-control__item {
+  position: relative;
+  z-index: 1;
+  border: 0;
+  background: transparent;
+  border-radius: 9999px;
+  padding: 0.4rem 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--font-jetbrains-mono), "Courier New", monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  transition: color 160ms ease;
+}
+
+.segmented-control__item--active {
+  color: var(--foreground);
+}
+
+.segmented-control__item--idle {
+  color: var(--muted-foreground);
+}
+
+.segmented-control__item--idle:hover {
+  color: var(--foreground);
+}
+
+.dark .segmented-control {
+  border-color: color-mix(in srgb, var(--border) 86%, transparent);
+}
+
+.dark .segmented-control__capsule {
+  background: color-mix(in srgb, var(--card) 86%, var(--background) 14%);
+  box-shadow:
+    0 2px 14px -6px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 color-mix(in srgb, #fff 8%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segmented-control__capsule,
+  .segmented-control__item {
+    transition: none;
+  }
+}
+
 /* ── Buttons ── */
 .btn-accent-solid {
   display: inline-flex;

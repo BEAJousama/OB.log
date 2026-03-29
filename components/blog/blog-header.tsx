@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Sun, Moon, Volume2, VolumeX, Menu, X, ChevronDown } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { Sun, Moon, Volume2, VolumeX, Menu, X, ChevronDown, Lightbulb, LightbulbOff } from "lucide-react"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { useTheme } from "@/contexts/ThemeContext"
 import { useSound } from "@/hooks/use-sound"
 import { useSoundSettings } from "@/contexts/SoundContext"
+import { useCursorLux } from "@/contexts/CursorLuxContext"
 import { useIntro } from "@/contexts/IntroContext"
 import type { Language } from "@/lib/translations"
 import {
@@ -25,19 +26,27 @@ const PORTFOLIO_URL = (process.env.NEXT_PUBLIC_PORTFOLIO_URL || "https://obeaj.m
 function IconToolbarButton({
   onClick,
   label,
+  active = false,
   children,
 }: {
   onClick: () => void
   label: string
+  active?: boolean
   children: React.ReactNode
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex size-10 shrink-0 items-center justify-center rounded-full text-muted-foreground ring-1 ring-border/50 transition hover:bg-muted hover:text-foreground hover:ring-border sm:size-11"
+      className={cn(
+        "flex size-10 shrink-0 items-center justify-center rounded-full ring-1 transition sm:size-11",
+        active
+          ? "text-accent ring-accent/35 [filter:drop-shadow(0_0_6px_rgba(184,163,124,0.6))]"
+          : "text-muted-foreground ring-border/50 hover:bg-muted hover:text-foreground hover:ring-border",
+      )}
       title={label}
       aria-label={label}
+      aria-pressed={active}
     >
       {children}
     </button>
@@ -53,12 +62,15 @@ export default function BlogHeader() {
   const [logoArcUsesScrollTimeline, setLogoArcUsesScrollTimeline] = useState(false)
   const [menuTopPx, setMenuTopPx] = useState(108)
   const [isMobile, setIsMobile] = useState(false)
+  const [hasFinePointer, setHasFinePointer] = useState(false)
   const { language, setLanguage, t } = useLanguage()
   const { theme, toggleTheme } = useTheme()
   const { playClick, playScrollTick } = useSound()
   const { uiSoundEnabled, toggleUiSound } = useSoundSettings()
+  const { cursorLuxEnabled, toggleCursorLux } = useCursorLux()
   const { introReady } = useIntro()
   const pathname = usePathname()
+  const router = useRouter()
 
   useEffect(() => {
     const el = headerBarRef.current
@@ -116,6 +128,14 @@ export default function BlogHeader() {
     handler()
     mql.addEventListener("change", handler)
     return () => mql.removeEventListener("change", handler)
+  }, [])
+
+  useEffect(() => {
+    const mql = window.matchMedia("(pointer: fine)")
+    const onChange = () => setHasFinePointer(mql.matches)
+    onChange()
+    mql.addEventListener("change", onChange)
+    return () => mql.removeEventListener("change", onChange)
   }, [])
 
   useEffect(() => {
@@ -177,8 +197,8 @@ export default function BlogHeader() {
   const navPillBase =
     "relative shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-xs sm:text-sm font-medium tracking-wide transition-all duration-200"
 
-  const themeLabel = theme === "light" ? "Switch to dark theme" : "Switch to light theme"
-  const soundLabel = uiSoundEnabled ? "Mute UI sounds" : "Enable UI sounds"
+  const themeLabel = theme === "light" ? t.switchToDarkTheme : t.switchToLightTheme
+  const soundLabel = uiSoundEnabled ? t.muteUiSounds : t.enableUiSounds
 
   const onThemeClick = () => {
     if (uiSoundEnabled) playClick()
@@ -188,6 +208,11 @@ export default function BlogHeader() {
   const onSoundClick = () => {
     playClick()
     toggleUiSound()
+  }
+
+  const onLuxClick = () => {
+    if (uiSoundEnabled) playClick()
+    toggleCursorLux()
   }
 
   return (
@@ -247,8 +272,8 @@ export default function BlogHeader() {
               className={cn(
                 navPillBase,
                 pathname === "/"
-                  ? "bg-accent/35 text-foreground ring-2 ring-accent/45 shadow-[inset_0_0_0_1px_rgba(184,163,124,0.3)]"
-                  : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
+                  ? "bg-accent/26 text-foreground ring-1 ring-accent/35 shadow-[inset_0_0_0_1px_rgba(184,163,124,0.25)]"
+                  : "text-muted-foreground hover:text-foreground hover:ring-1 hover:ring-border/45",
               )}
             >
               {t.home}
@@ -260,7 +285,7 @@ export default function BlogHeader() {
               onClick={() => {
                 if (uiSoundEnabled) playClick()
               }}
-              className="shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-medium tracking-wide text-foreground transition hover:bg-accent/20 hover:text-foreground sm:text-sm"
+              className="shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-medium tracking-wide text-foreground transition hover:text-foreground hover:ring-1 hover:ring-border/45 sm:text-sm"
             >
               {t.blogNavPortfolioLink}
               <span className="ml-0.5 opacity-70" aria-hidden>
@@ -270,44 +295,43 @@ export default function BlogHeader() {
           </nav>
 
           <div className="ml-auto flex items-center gap-1 sm:gap-1.5">
-            <div
-              className="hidden rounded-full bg-muted/70 p-0.5 ring-1 ring-border/40 sm:p-1 md:flex"
-              role="group"
-              aria-label="Language"
-            >
+            <div className="segmented-control hidden lg:flex" role="group" aria-label={t.languageMenu}>
+              <div
+                className="segmented-control__capsule"
+                style={{ transform: `translateX(${language === "fr" ? 100 : 0}%)` }}
+                aria-hidden
+              />
               <button
                 type="button"
                 onClick={() => {
                   if (uiSoundEnabled) playClick()
                   setLanguage("en")
+                  router.refresh()
                 }}
                 className={cn(
-                  "rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider transition sm:px-3 sm:py-1.5 sm:text-xs md:px-4 md:text-sm",
-                  language === "en"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground",
+                  "segmented-control__item",
+                  language === "en" ? "segmented-control__item--active" : "segmented-control__item--idle",
                 )}
               >
-                en
+                EN
               </button>
               <button
                 type="button"
                 onClick={() => {
                   if (uiSoundEnabled) playClick()
                   setLanguage("fr")
+                  router.refresh()
                 }}
                 className={cn(
-                  "rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider transition sm:px-3 sm:py-1.5 sm:text-xs md:px-4 md:text-sm",
-                  language === "fr"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground",
+                  "segmented-control__item",
+                  language === "fr" ? "segmented-control__item--active" : "segmented-control__item--idle",
                 )}
               >
-                fr
+                FR
               </button>
             </div>
 
-            <div className="hidden items-center gap-0.5 sm:gap-1 md:flex" aria-label="Display and audio">
+            <div className="hidden items-center gap-0.5 sm:gap-1 lg:flex" aria-label={t.quickSettings}>
               <IconToolbarButton onClick={onThemeClick} label={themeLabel}>
                 {theme === "light" ? (
                   <Moon size={18} strokeWidth={1.85} />
@@ -322,9 +346,18 @@ export default function BlogHeader() {
                   <VolumeX size={18} strokeWidth={1.85} />
                 )}
               </IconToolbarButton>
+              {hasFinePointer && (
+                <IconToolbarButton
+                  onClick={onLuxClick}
+                  label={cursorLuxEnabled ? t.disableCursorLight : t.enableCursorLight}
+                  active={cursorLuxEnabled}
+                >
+                  {cursorLuxEnabled ? <Lightbulb size={18} strokeWidth={1.85} /> : <LightbulbOff size={18} strokeWidth={1.85} />}
+                </IconToolbarButton>
+              )}
             </div>
 
-            <div className="flex items-center gap-0.5 md:hidden" aria-label={t.quickSettings}>
+            <div className="flex items-center gap-0.5 lg:hidden" aria-label={t.quickSettings}>
               <IconToolbarButton onClick={onThemeClick} label={themeLabel}>
                 {theme === "light" ? (
                   <Moon size={17} strokeWidth={1.85} />
@@ -363,13 +396,14 @@ export default function BlogHeader() {
                     onValueChange={(v) => {
                       if (uiSoundEnabled) playClick()
                       setLanguage(v as Language)
+                      router.refresh()
                     }}
                   >
                     <DropdownMenuRadioItem value="en" className="pixel-text cursor-pointer text-sm">
-                      English
+                      EN
                     </DropdownMenuRadioItem>
                     <DropdownMenuRadioItem value="fr" className="pixel-text cursor-pointer text-sm">
-                      Français
+                      FR
                     </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
@@ -382,9 +416,9 @@ export default function BlogHeader() {
                 if (uiSoundEnabled) playClick()
                 setMobileMenuOpen(!mobileMenuOpen)
               }}
-              className="flex size-10 items-center justify-center rounded-full bg-muted/70 text-foreground ring-2 ring-border/60 transition hover:bg-muted sm:size-11 md:hidden"
+              className="flex size-10 items-center justify-center rounded-full bg-muted/70 text-foreground ring-2 ring-border/60 transition hover:bg-muted sm:size-11 lg:hidden"
               aria-expanded={mobileMenuOpen}
-              aria-label="Menu"
+              aria-label={t.menu}
             >
               {mobileMenuOpen ? <X size={20} strokeWidth={2} /> : <Menu size={20} strokeWidth={2} />}
             </button>

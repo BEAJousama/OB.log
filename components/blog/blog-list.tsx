@@ -18,6 +18,7 @@ export default function BlogList({ posts, isMock, configMissing }: BlogListProps
   const { t } = useLanguage()
   const [query, setQuery] = useState("")
   const [page, setPage] = useState(1)
+  const [filterMode, setFilterMode] = useState<"all" | "matches">("all")
 
   const filtered = useMemo(() => {
     if (!query.trim()) return posts
@@ -30,19 +31,24 @@ export default function BlogList({ posts, isMock, configMissing }: BlogListProps
     )
   }, [posts, query])
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE))
+  const sourcePosts = filterMode === "matches" ? filtered : posts
+  const totalPages = Math.max(1, Math.ceil(sourcePosts.length / POSTS_PER_PAGE))
   const safePage = Math.min(page, totalPages)
-  const paginated = filtered.slice((safePage - 1) * POSTS_PER_PAGE, safePage * POSTS_PER_PAGE)
+  const paginated = sourcePosts.slice((safePage - 1) * POSTS_PER_PAGE, safePage * POSTS_PER_PAGE)
 
   const handleQuery = (value: string) => {
     setQuery(value)
     setPage(1)
+    setFilterMode(value.trim() ? "matches" : "all")
   }
 
   const handlePage = (next: number) => {
     setPage(next)
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
+
+  const reserveSlots = filterMode === "matches" && safePage === 1
+  const placeholdersCount = reserveSlots ? Math.max(0, 3 - paginated.length) : 0
 
   return (
     <>
@@ -63,6 +69,39 @@ export default function BlogList({ posts, isMock, configMissing }: BlogListProps
             </button>
           )}
         </div>
+      </div>
+
+      <div className="segmented-control mb-5 inline-grid min-w-[11.5rem]" role="group" aria-label={t.blogFilterLabel}>
+        <div
+          className="segmented-control__capsule"
+          style={{ transform: `translateX(${filterMode === "matches" ? 100 : 0}%)` }}
+          aria-hidden
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setFilterMode("all")
+            setPage(1)
+          }}
+          className={`segmented-control__item ${
+            filterMode === "all" ? "segmented-control__item--active" : "segmented-control__item--idle"
+          }`}
+        >
+          {t.blogFilterAll}
+        </button>
+        <button
+          type="button"
+          disabled={!query.trim()}
+          onClick={() => {
+            setFilterMode("matches")
+            setPage(1)
+          }}
+          className={`segmented-control__item ${
+            filterMode === "matches" ? "segmented-control__item--active" : "segmented-control__item--idle"
+          } disabled:opacity-45`}
+        >
+          {t.blogFilterMatches}
+        </button>
       </div>
 
       {/* Mock / config notice */}
@@ -98,7 +137,7 @@ NEXT_PUBLIC_SANITY_DATASET=production`}
       )}
 
       {/* Results count when searching */}
-      {query && (
+      {query && filterMode === "matches" && (
         <p className="pixel-text mb-4 text-xs text-muted-foreground">
           {filtered.length === 0
             ? t.blogNoArticlesFound
@@ -113,6 +152,13 @@ NEXT_PUBLIC_SANITY_DATASET=production`}
         <section className="grid gap-5 md:gap-6">
           {paginated.map((post) => (
             <PostCard key={post._id} post={post} />
+          ))}
+          {Array.from({ length: placeholdersCount }, (_, idx) => (
+            <article
+              key={`placeholder-${idx}`}
+              aria-hidden
+              className="glass-panel pointer-events-none min-h-[14.5rem] opacity-0 md:min-h-[15.5rem]"
+            />
           ))}
         </section>
       ) : (

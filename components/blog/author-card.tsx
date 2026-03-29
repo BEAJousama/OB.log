@@ -1,22 +1,26 @@
+"use client"
+
 import type { Author } from "@/lib/blog/types"
 import { FaGithub, FaLinkedin, FaXTwitter, FaGlobe } from "react-icons/fa6"
+import { useLanguage } from "@/contexts/LanguageContext"
 
 type Props = {
   author: Author
 }
 
 export default function AuthorCard({ author }: Props) {
+  const { t } = useLanguage()
   const socials = [
     { href: author.social?.github, icon: FaGithub, label: "GitHub" },
     { href: author.social?.twitter, icon: FaXTwitter, label: "Twitter/X" },
     { href: author.social?.linkedin, icon: FaLinkedin, label: "LinkedIn" },
-    { href: author.social?.website, icon: FaGlobe, label: "Website" },
+    { href: author.social?.website, icon: FaGlobe, label: t.blogSocialWebsite },
   ].filter((s) => s.href)
 
   return (
     <div className="mt-10 border-t-2 border-border pt-6">
       <p className="pixel-text mb-4 text-xs uppercase tracking-widest text-muted-foreground">
-        Written by
+        {t.blogWrittenBy}
       </p>
 
       <div className="flex items-start gap-4">
