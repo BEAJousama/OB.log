@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Sun, Moon, Volume2, VolumeX, Menu, X, ChevronDown, Lightbulb, LightbulbOff } from "lucide-react"
+import { Sun, Moon, Volume2, VolumeX, Menu, X, Lightbulb, LightbulbOff } from "lucide-react"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { useTheme } from "@/contexts/ThemeContext"
 import { useSound } from "@/hooks/use-sound"
@@ -295,7 +295,7 @@ export default function BlogHeader() {
           </nav>
 
           <div className="ml-auto flex items-center gap-1 sm:gap-1.5">
-            <div className="segmented-control hidden lg:flex" role="group" aria-label={t.languageMenu}>
+            <div className="segmented-control hidden! xl:flex" role="group" aria-label={t.languageMenu}>
               <div
                 className="segmented-control__capsule"
                 style={{ transform: `translateX(${language === "fr" ? 100 : 0}%)` }}
@@ -331,7 +331,7 @@ export default function BlogHeader() {
               </button>
             </div>
 
-            <div className="hidden items-center gap-0.5 sm:gap-1 lg:flex" aria-label={t.quickSettings}>
+            <div className="hidden items-center gap-0.5 sm:gap-1 xl:flex" aria-label={t.quickSettings}>
               <IconToolbarButton onClick={onThemeClick} label={themeLabel}>
                 {theme === "light" ? (
                   <Moon size={18} strokeWidth={1.85} />
@@ -357,7 +357,7 @@ export default function BlogHeader() {
               )}
             </div>
 
-            <div className="flex items-center gap-0.5 lg:hidden" aria-label={t.quickSettings}>
+            <div className="flex items-center gap-0.5 xl:hidden" aria-label={t.quickSettings}>
               <IconToolbarButton onClick={onThemeClick} label={themeLabel}>
                 {theme === "light" ? (
                   <Moon size={17} strokeWidth={1.85} />
@@ -382,14 +382,13 @@ export default function BlogHeader() {
                     )}
                     aria-label={t.languageMenu}
                   >
-                    {language}
-                    <ChevronDown className="size-3.5 shrink-0 opacity-70" aria-hidden />
+                    {language.toUpperCase()}
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
                   sideOffset={6}
-                  className="glass-panel z-[100] min-w-[10rem] border-border/60 p-1 shadow-lg"
+                  className="glass-panel z-[100] min-w-[10rem] border-border/60 p-1 text-foreground shadow-lg"
                 >
                   <DropdownMenuRadioGroup
                     value={language}
@@ -399,10 +398,16 @@ export default function BlogHeader() {
                       router.refresh()
                     }}
                   >
-                    <DropdownMenuRadioItem value="en" className="pixel-text cursor-pointer text-sm">
+                    <DropdownMenuRadioItem
+                      value="en"
+                      className="pixel-text cursor-pointer text-sm text-foreground data-[highlighted]:text-foreground"
+                    >
                       EN
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="fr" className="pixel-text cursor-pointer text-sm">
+                    <DropdownMenuRadioItem
+                      value="fr"
+                      className="pixel-text cursor-pointer text-sm text-foreground data-[highlighted]:text-foreground"
+                    >
                       FR
                     </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
@@ -416,7 +421,7 @@ export default function BlogHeader() {
                 if (uiSoundEnabled) playClick()
                 setMobileMenuOpen(!mobileMenuOpen)
               }}
-              className="flex size-10 items-center justify-center rounded-full bg-muted/70 text-foreground ring-2 ring-border/60 transition hover:bg-muted sm:size-11 lg:hidden"
+              className="flex size-10 items-center justify-center rounded-full bg-muted/70 text-foreground ring-2 ring-border/60 transition hover:bg-muted sm:size-11 xl:hidden"
               aria-expanded={mobileMenuOpen}
               aria-label={t.menu}
             >

@@ -5,6 +5,7 @@
 
 :root {
   --logo-fly-duration: 920ms;
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
   /* Includes fixed header top inset (gap from viewport) + bar height */
   --site-header-offset: 7.5rem;
 
@@ -254,14 +255,24 @@
 
 .body-copy {
   font-family: var(--font-jetbrains-mono), "Courier New", monospace;
+  letter-spacing: 0.03em;
   font-size: 0.875rem;
-  line-height: 1.68;
+  font-weight: 400;
+  line-height: 1.65;
   color: color-mix(in srgb, var(--foreground) 94%, transparent);
 }
 
 @media (min-width: 768px) {
   .body-copy {
     font-size: 0.9375rem;
+    line-height: 1.7;
+  }
+}
+
+@media (min-width: 1800px) {
+  .body-copy {
+    font-size: 1rem;
+    line-height: 1.75;
   }
 }
 
@@ -277,15 +288,15 @@
   min-height: 100dvh;
   flex-direction: column;
   justify-content: center;
-  padding-top: 3.5rem;
-  padding-bottom: 3.5rem;
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
   background: transparent;
 }
 
 @media (min-width: 768px) {
   .section-surface {
-    padding-top: 4.5rem;
-    padding-bottom: 4.5rem;
+    padding-top: 3.25rem;
+    padding-bottom: 3.25rem;
   }
 }
 
@@ -310,24 +321,40 @@
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   border-radius: 1.25rem;
-  border: 1px solid color-mix(in srgb, var(--border) 78%, var(--foreground) 12%);
-  background: color-mix(in srgb, var(--card) 58%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 78%, var(--foreground) 10%);
+  background: color-mix(in srgb, var(--card) 78%, transparent);
   backdrop-filter: blur(32px) saturate(1.38);
   -webkit-backdrop-filter: blur(32px) saturate(1.38);
   box-shadow:
-    0 18px 48px -12px color-mix(in srgb, var(--foreground) 12%, transparent),
-    0 2px 0 color-mix(in srgb, #fff 22%, transparent) inset,
-    0 -1px 0 color-mix(in srgb, var(--foreground) 6%, transparent) inset;
+    0 8px 32px -8px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 0 color-mix(in srgb, #fff 34%, transparent),
+    inset 0 -1px 0 0 color-mix(in srgb, var(--foreground) 4%, transparent);
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.glass-panel:hover {
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--border));
+  background: color-mix(in srgb, var(--accent) 3%, var(--card));
 }
 
 .dark .glass-panel {
-  border-color: color-mix(in srgb, var(--border) 85%, var(--foreground) 8%);
+  border-color: color-mix(in srgb, var(--border) 62%, var(--foreground) 14%);
+  background: color-mix(in srgb, var(--card) 72%, transparent);
   backdrop-filter: blur(36px) saturate(1.32);
   -webkit-backdrop-filter: blur(36px) saturate(1.32);
   box-shadow:
-    0 22px 56px -14px rgba(0, 0, 0, 0.55),
-    0 1px 0 color-mix(in srgb, #fff 8%, transparent) inset,
-    0 -1px 0 color-mix(in srgb, #000 35%, transparent) inset;
+    0 12px 40px -12px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 0 color-mix(in srgb, #fff 14%, transparent),
+    inset 0 -1px 0 0 color-mix(in srgb, #000 22%, transparent);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-panel {
+    background: color-mix(in srgb, var(--card) 94%, var(--background) 6%);
+  }
+  .dark .glass-panel {
+    background: color-mix(in srgb, var(--card) 90%, var(--background) 10%);
+  }
 }
 
 .glass-chip {
@@ -335,18 +362,19 @@
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   border-radius: 0.75rem;
-  border: 1px solid color-mix(in srgb, var(--border) 80%, var(--foreground) 10%);
-  background: color-mix(in srgb, var(--card) 52%, transparent);
-  backdrop-filter: blur(24px) saturate(1.35);
-  -webkit-backdrop-filter: blur(24px) saturate(1.35);
-  box-shadow: 0 1px 0 color-mix(in srgb, #fff 18%, transparent) inset;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, var(--foreground) 12%);
+  background: color-mix(in srgb, var(--card) 72%, transparent);
+  backdrop-filter: blur(24px) saturate(1.34);
+  -webkit-backdrop-filter: blur(24px) saturate(1.34);
+  box-shadow: inset 0 1px 0 0 color-mix(in srgb, #fff 22%, transparent);
 }
 
 .dark .glass-chip {
+  border-color: color-mix(in srgb, var(--border) 55%, var(--foreground) 16%);
+  background: color-mix(in srgb, var(--card) 64%, transparent);
   backdrop-filter: blur(28px) saturate(1.28);
   -webkit-backdrop-filter: blur(28px) saturate(1.28);
-  border-color: color-mix(in srgb, var(--border) 88%, transparent);
-  box-shadow: 0 1px 0 color-mix(in srgb, #fff 6%, transparent) inset;
+  box-shadow: inset 0 1px 0 0 color-mix(in srgb, #fff 8%, transparent);
 }
 
 .glass-inset,
@@ -354,25 +382,30 @@
   isolation: isolate;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  border-radius: var(--radius-lg);
-  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border) 78%);
-  background: color-mix(in srgb, var(--card) 45%, transparent);
-  backdrop-filter: blur(18px) saturate(1.2);
-  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, var(--accent) 18%);
+  background: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--card) 94%, var(--accent) 6%) 58%,
+    transparent
+  );
+  backdrop-filter: blur(18px) saturate(1.28);
+  -webkit-backdrop-filter: blur(18px) saturate(1.28);
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--foreground) 4%, transparent) inset,
-    0 1px 12px color-mix(in srgb, var(--accent) 12%, transparent) inset;
+    inset 0 1px 0 0 color-mix(in srgb, #fff 45%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .dark .glass-inset,
 .dark .skill-item {
-  border-color: color-mix(in srgb, var(--card) 35%, var(--border) 65%);
-  background: color-mix(in srgb, var(--card) 38%, var(--background) 62%);
-  backdrop-filter: blur(20px) saturate(1.15);
-  -webkit-backdrop-filter: blur(20px) saturate(1.15);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, #fff 4%, transparent) inset,
-    0 -1px 0 color-mix(in srgb, #000 25%, transparent) inset;
+  border-color: color-mix(in srgb, var(--border) 66%, var(--accent) 16%);
+  background: color-mix(in srgb, color-mix(in srgb, var(--card) 90%, var(--accent) 4%) 64%, transparent);
+}
+
+.glass-inset:focus-within,
+.skill-item:focus-within {
+  outline: 2px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  outline-offset: 0;
 }
 
 /* Cursor lux: subtle radial highlight on glass targets */
@@ -441,7 +474,7 @@ html.dark.cursor-lux-enabled :is(.glass-panel, .glass-chip, .glass-inset, .skill
   box-shadow:
     0 1px 10px -4px color-mix(in srgb, var(--foreground) 14%, transparent),
     inset 0 1px 0 color-mix(in srgb, #fff 20%, transparent);
-  transition: transform 260ms cubic-bezier(0.33, 1, 0.68, 1);
+  transition: transform 260ms var(--ease-premium);
   will-change: transform;
   z-index: 0;
 }
@@ -496,102 +529,105 @@ html.dark.cursor-lux-enabled :is(.glass-panel, .glass-chip, .glass-inset, .skill
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-md);
+  border-radius: 9999px;
   padding: 0.5rem 1rem;
   font-family: var(--font-jetbrains-mono), "Courier New", monospace;
   font-weight: 600;
-  color: var(--on-accent);
-  background: color-mix(in srgb, var(--accent) 72%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border) 45%);
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 36%, var(--border) 64%);
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--foreground) 8%, transparent),
-    0 1px 0 color-mix(in srgb, #fff 25%, transparent) inset;
+    0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent),
+    inset 0 1px 0 0 color-mix(in srgb, #fff 14%, transparent);
   transition:
-    background 0.15s ease,
-    box-shadow 0.15s ease,
-    transform 0.15s ease;
+    background-color 220ms ease,
+    border-color 220ms ease,
+    transform 220ms var(--ease-premium);
 }
 
 .btn-accent-solid:hover {
-  background: color-mix(in srgb, var(--accent) 88%, transparent);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--foreground) 12%, transparent),
-    0 1px 0 color-mix(in srgb, #fff 35%, transparent) inset;
+  background: color-mix(in srgb, var(--accent) 42%, transparent);
+  transform: translateY(-1px) scale(1.01);
 }
 
-.dark .btn-accent-solid {
-  background: color-mix(in srgb, var(--accent) 58%, transparent);
-}
-
-.dark .btn-accent-solid:hover {
-  background: color-mix(in srgb, var(--accent) 72%, transparent);
+.btn-accent-solid:active {
+  transform: translateY(0) scale(0.985);
 }
 
 .btn-muted-solid {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-md);
+  border-radius: 9999px;
   padding: 0.5rem 1rem;
   font-family: var(--font-jetbrains-mono), "Courier New", monospace;
   font-weight: 600;
   color: var(--foreground);
-  background: color-mix(in srgb, var(--muted) 85%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border) 70%, var(--foreground) 8%);
-  box-shadow: 0 1px 0 color-mix(in srgb, #fff 12%, transparent) inset;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease;
+  background: color-mix(in srgb, var(--muted) 58%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 82%, var(--foreground) 8%);
 }
 
 .btn-muted-solid:hover {
-  background: color-mix(in srgb, var(--muted) 95%, transparent);
-  border-color: color-mix(in srgb, var(--border) 55%, var(--accent) 20%);
+  background: color-mix(in srgb, var(--muted) 68%, transparent);
 }
 
 .retro-button {
   padding: 0.5rem 1rem;
   font-family: var(--font-jetbrains-mono), "Courier New", monospace;
   font-weight: 600;
-  color: var(--on-accent);
-  background: color-mix(in srgb, var(--accent) 68%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--border) 50%);
-  border-radius: var(--radius-md);
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 36%, var(--border) 64%);
+  border-radius: 9999px;
   cursor: pointer;
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--foreground) 7%, transparent),
-    0 1px 0 color-mix(in srgb, #fff 22%, transparent) inset;
+    0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent),
+    inset 0 1px 0 0 color-mix(in srgb, #fff 14%, transparent);
   transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease,
+    background-color 220ms ease,
+    border-color 220ms ease,
+    transform 220ms var(--ease-premium),
     opacity 0.15s ease;
 }
 
 .retro-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  background: color-mix(in srgb, var(--accent) 82%, transparent);
+  background: color-mix(in srgb, var(--accent) 42%, transparent);
+  transform: translateY(-1px) scale(1.01);
 }
 
 .retro-button:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.985);
 }
 
 .retro-button:disabled {
   opacity: 0.5;
 }
 
-.dark .retro-button {
-  background: color-mix(in srgb, var(--accent) 52%, transparent);
-}
-
-.dark .retro-button:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent) 68%, transparent);
-}
-
 /* ── Dividers & frames ── */
 .dashed-divider {
-  border-top: 2px dashed color-mix(in srgb, var(--foreground) 25%, transparent);
+  border-top: 1px dashed color-mix(in srgb, var(--foreground) 20%, transparent);
+}
+
+.solid-divider {
+  border-top: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
+}
+
+.accent-top-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 8%,
+    color-mix(in srgb, var(--accent) 70%, #e7d5b5) 50%,
+    transparent 92%
+  );
+  opacity: 0.72;
 }
 
 .pixel-border {

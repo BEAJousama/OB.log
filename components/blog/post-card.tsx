@@ -12,7 +12,7 @@ export default function PostCard({ post }: PostCardProps) {
   const readingTime = estimateReadingTimeMinutes(post.excerpt, post.body)
 
   return (
-    <article className="glass-panel p-5 transition-[box-shadow,border-color] hover:border-accent/25 md:p-6">
+    <article className="glass-panel p-5 md:p-6">
       <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <span>{formatPostDate(post.publishedAt)}</span>
         <span>•</span>

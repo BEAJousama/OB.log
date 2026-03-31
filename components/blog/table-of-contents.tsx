@@ -14,17 +14,17 @@ type Props = {
 function Toast({ show, message }: { show: boolean; message: string }) {
   if (!show) return null
   return (
-    <div
-      className="glass-panel fixed z-[10050] flex items-center gap-2 px-4 py-2"
-      style={{
-        top: "calc(var(--site-header-offset) + 0.5rem)",
-        left: "50%",
-        transform: "translateX(-50%)",
-        animation: "toastFadeIn 0.3s ease-out forwards",
-      }}
-    >
-      <Check size={16} className="text-green-500" />
-      <span className="pixel-text text-xs">{message}</span>
+    <div className="pointer-events-none fixed inset-0 z-[10050]">
+      <div
+        className="glass-panel absolute left-1/2 inline-flex w-fit max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-2 px-4 py-2"
+        style={{
+          top: "calc(var(--site-header-offset) + 0.5rem)",
+          animation: "toastFadeIn 0.3s ease-out forwards",
+        }}
+      >
+        <Check size={16} className="text-green-500" />
+        <span className="pixel-text text-xs">{message}</span>
+      </div>
       <style jsx>{`
         @keyframes toastFadeIn {
           from {
@@ -97,7 +97,7 @@ export default function TableOfContents({ headings }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState("")
   const [toastVisible, setToastVisible] = useState(false)
-  const [mobilePanelTop, setMobilePanelTop] = useState(120)
+  const [mobilePanelTop, setMobilePanelTop] = useState(140)
 
   const mobileStickyRef = useRef<HTMLDivElement>(null)
   const desktopProgressRef = useRef<HTMLDivElement>(null)
@@ -108,7 +108,7 @@ export default function TableOfContents({ headings }: Props) {
     const el = mobileStickyRef.current
     if (!el) return
     const r = el.getBoundingClientRect()
-    setMobilePanelTop(r.bottom + 8)
+    setMobilePanelTop(Math.round(r.bottom))
   }, [])
 
   useLayoutEffect(() => {
@@ -119,9 +119,11 @@ export default function TableOfContents({ headings }: Props) {
     const onWin = () => updateMobilePanelAnchor()
     window.addEventListener("scroll", onWin, { passive: true })
     window.addEventListener("resize", onWin)
+    window.visualViewport?.addEventListener("resize", onWin)
     return () => {
       window.removeEventListener("scroll", onWin)
       window.removeEventListener("resize", onWin)
+      window.visualViewport?.removeEventListener("resize", onWin)
     }
   }, [updateMobilePanelAnchor])
 
@@ -312,7 +314,7 @@ export default function TableOfContents({ headings }: Props) {
       <div
         ref={mobileStickyRef}
         className="sticky z-40 min-[1440px]:hidden"
-        style={{ top: "var(--site-header-offset)" }}
+        style={{ top: "calc(var(--site-header-offset) - 1rem)" }}
       >
         <div className="glass-chip h-1.5 w-full overflow-hidden rounded-full">
           <div ref={mobileProgressRef} className="h-full rounded-full bg-accent" style={{ width: "0%" }} />
@@ -345,12 +347,19 @@ export default function TableOfContents({ headings }: Props) {
           <button
             type="button"
             aria-label={t.blogCloseIndex}
-            className="fixed inset-0 z-[48] bg-background/55 backdrop-blur-[2px] dark:bg-background/70"
+            className="fixed inset-0 z-[38] bg-background/55 backdrop-blur-[2px] dark:bg-background/70"
+            style={{
+              clipPath: `inset(${mobilePanelTop}px 0 0 0)`,
+              WebkitClipPath: `inset(${mobilePanelTop}px 0 0 0)`,
+            }}
             onClick={() => setMobileOpen(false)}
           />
           <div
-            className="fixed left-3 right-3 z-[49] flex max-h-[min(72vh,calc(100dvh-env(safe-area-inset-bottom)-1rem))] flex-col overflow-hidden rounded-2xl border border-border/50 shadow-2xl sm:left-4 sm:right-4"
-            style={{ top: mobilePanelTop }}
+            className="fixed left-1/2 z-[39] flex w-[calc(100vw-2rem)] max-w-[30rem] -translate-x-1/2 flex-col overflow-hidden rounded-2xl border border-border/50 shadow-2xl"
+            style={{
+              top: mobilePanelTop,
+              maxHeight: "min(66vh, calc(100dvh - env(safe-area-inset-bottom) - 1rem - var(--site-header-offset)))",
+            }}
             role="dialog"
             aria-modal="true"
             aria-label={t.blogArticleSections}
