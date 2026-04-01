@@ -321,6 +321,8 @@
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   border-radius: 1.25rem;
+  border: 1px solid var(--border);
+  background: var(--card);
   border: 1px solid color-mix(in srgb, var(--border) 78%, var(--foreground) 10%);
   background: color-mix(in srgb, var(--card) 78%, transparent);
   backdrop-filter: blur(32px) saturate(1.38);
@@ -338,6 +340,8 @@
 }
 
 .dark .glass-panel {
+  border: 1px solid var(--border);
+  background: var(--card);
   border-color: color-mix(in srgb, var(--border) 62%, var(--foreground) 14%);
   background: color-mix(in srgb, var(--card) 72%, transparent);
   backdrop-filter: blur(36px) saturate(1.32);
@@ -362,6 +366,8 @@
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--card);
   border: 1px solid color-mix(in srgb, var(--border) 72%, var(--foreground) 12%);
   background: color-mix(in srgb, var(--card) 72%, transparent);
   backdrop-filter: blur(24px) saturate(1.34);
@@ -370,6 +376,8 @@
 }
 
 .dark .glass-chip {
+  border: 1px solid var(--border);
+  background: var(--card);
   border-color: color-mix(in srgb, var(--border) 55%, var(--foreground) 16%);
   background: color-mix(in srgb, var(--card) 64%, transparent);
   backdrop-filter: blur(28px) saturate(1.28);
@@ -383,6 +391,8 @@
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--card);
   border: 1px solid color-mix(in srgb, var(--border) 70%, var(--accent) 18%);
   background: color-mix(
     in srgb,
@@ -398,6 +408,8 @@
 
 .dark .glass-inset,
 .dark .skill-item {
+  border: 1px solid var(--border);
+  background: var(--card);
   border-color: color-mix(in srgb, var(--border) 66%, var(--accent) 16%);
   background: color-mix(in srgb, color-mix(in srgb, var(--card) 90%, var(--accent) 4%) 64%, transparent);
 }
