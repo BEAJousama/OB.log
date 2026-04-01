@@ -295,7 +295,8 @@ export default function BlogHeader() {
           </nav>
 
           <div className="ml-auto flex items-center gap-1 sm:gap-1.5">
-            <div className="segmented-control hidden! xl:flex" role="group" aria-label={t.languageMenu}>
+            <div className="hidden xl:flex">
+            <div className="segmented-control" role="group" aria-label={t.languageMenu}>
               <div
                 className="segmented-control__capsule"
                 style={{ transform: `translateX(${language === "fr" ? 100 : 0}%)` }}
@@ -329,6 +330,7 @@ export default function BlogHeader() {
               >
                 FR
               </button>
+            </div>
             </div>
 
             <div className="hidden items-center gap-0.5 sm:gap-1 xl:flex" aria-label={t.quickSettings}>
